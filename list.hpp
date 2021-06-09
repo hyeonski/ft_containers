@@ -138,10 +138,17 @@ namespace ft
 			// template <class InputIterator>
 			// void assign (InputIterator first, InputIterator last);
 
-			// void assign (size_type n, const value_type& val)
-			// {
-				
-			// }
+			void assign (size_type n, const value_type& val)
+			{
+				this->clear();
+
+				NodeAlloc nodeAlloc;
+
+				for (size_type i = 0; i < n; i++)
+					this->push_back(val);
+
+				this->_size = n; //explicitly
+			}
 
 			void push_front (const value_type& val)
 			{

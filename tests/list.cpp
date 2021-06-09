@@ -103,4 +103,22 @@ int main()
 		std::cout << "after size(): " << list.size() << std::endl;
 		std::cout << "is empty? " << list.empty() << std::endl;
 	}
+
+	{
+		std::cout << "--------- list assign-value test --------" << std::endl;
+		NS::list<int> list;
+
+		list.push_back(1);
+		list.push_back(2);
+		list.push_back(3);
+		list.push_back(4);
+		list.push_back(5);
+		list.push_back(6);
+		
+		// iterator로 자료 보여주기 필요
+		std::cout << "before size(): " << list.size() << std::endl;
+		list.assign(3, 10);
+		// iterator로 자료 보여주기 필요
+		std::cout << "after size(): " << list.size() << std::endl;
+	}
 }
