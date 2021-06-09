@@ -32,6 +32,20 @@ namespace ft
 			
 			typedef typename Alloc::template rebind< list_node<T> >::other NodeAlloc;
 
+			void deleteNode(list_node<T>* node)
+			{
+				// 비어있을 때 delete 처리해 말아?
+				NodeAlloc nodeAlloc;
+
+				list_node<T>* nodePrev = node->_prev;
+				list_node<T>* nodeNext = node->_next;
+	
+				nodeAlloc.destroy(node);
+				nodeAlloc.deallocate(node, 1);
+				nodePrev->_next = nodeNext;
+				nodeNext->_prev = nodePrev;
+				--this->_size;
+			}
 		public:
 			typedef T value_type;
 			typedef Alloc allocator_type;
@@ -122,10 +136,12 @@ namespace ft
 			// const_reference back() const;
 
 			// template <class InputIterator>
-
 			// void assign (InputIterator first, InputIterator last);
 
-			// void assign (size_type n, const value_type& val);
+			void assign (size_type n, const value_type& val)
+			{
+				
+			}
 
 			void push_front (const value_type& val)
 			{
@@ -152,10 +168,12 @@ namespace ft
 				++this->_size;
 			}
 
-			// void pop_front()
-			// {
-			// 	list_node
-			// }
+			void pop_front()
+			{
+				list_node<T>* deleteFront = this->_first;
+				this->_first = this->_first->_next;
+				this->deleteNode(deleteFront);
+			}
 
 			void push_back(const value_type& val)
 			{
@@ -182,31 +200,59 @@ namespace ft
 				}
 				++this->_size;
 			}
-			// void pop_back();
+
+			void pop_back()
+			{
+				list_node<T>* deleteBack = this->_last->_prev;
+				this->deleteNode(deleteBack);
+			}
+
 			// iterator insert (iterator position, const value_type& val);
+			
 			// void insert (iterator position, size_type n, const value_type& val);
+			
 			// template <class InputIterator>
 			// void insert (iterator position, InputIterator first, InputIterator last);
+			
 			// iterator erase (iterator position);
+			
 			// iterator erase (iterator first, iterator last);
+			
 			// void swap (list& x);
+			
 			// void resize (size_type n, value_type val = value_type());
-			// void clear();
+			
+			void clear()
+			{
+
+			}
+
 			// void splice (iterator position, list& x);
+			
 			// void splice (iterator position, list& x, iterator i);
+			
 			// void splice (iterator position, list& x, iterator first, iterator last);
+			
 			// void remove (const value_type& val);
+			
 			// template <class Predicate>
 			// void remove_if (Predicate pred);
+			
 			// void unique();
+			
 			// template <class BinaryPredicate>
 			// void unique (BinaryPredicate binary_pred);
+			
 			// void merge (list& x);
+			
 			// template <class Compare>
 			// void merge (list& x, Compare comp);
+			
 			// void sort();
+			
 			// template <class Compare>
 			// void sort (Compare comp);
+			
 			// void reverse();
 
 	};
