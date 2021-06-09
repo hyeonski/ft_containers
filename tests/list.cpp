@@ -9,6 +9,12 @@
 int main()
 {
 	{
+		std::cout << "-------- list default constructor test --------" << std::endl;
+		NS::list<int> list;
+		std::cout << "is empty()?" << list.empty() << std::endl;
+	}
+
+	{
 		std::cout << "--------- list fill constructor test --------" << std::endl;
 		NS::list<int> list(5, 100);
 
@@ -78,5 +84,23 @@ int main()
 		list.pop_front();
 		// iterator로 자료 보여주기 필요
 		std::cout << "after size(): " << list.size() << std::endl;
+	}
+
+	{
+		std::cout << "--------- list clear test --------" << std::endl;
+		NS::list<int> list;
+
+		list.push_back(1);
+		list.push_back(2);
+		list.push_back(3);
+		list.push_back(4);
+		list.push_back(5);
+		list.push_back(6);
+		
+		std::cout << "before size(): " << list.size() << std::endl;
+		list.clear();
+		// iterator로 자료 보여주기 필요
+		std::cout << "after size(): " << list.size() << std::endl;
+		std::cout << "is empty? " << list.empty() << std::endl;
 	}
 }

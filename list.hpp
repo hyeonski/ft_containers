@@ -96,15 +96,15 @@ namespace ft
 
 			// }
 			
-			~list()
-			{
+			// ~list()
+			// {
 
-			}
+			// }
 
-			list& operator=(const list& x)
-			{
+			// list& operator=(const list& x)
+			// {
 
-			}
+			// }
 
 			// iterator begin();
 			// const_iterator begin() const;
@@ -138,10 +138,10 @@ namespace ft
 			// template <class InputIterator>
 			// void assign (InputIterator first, InputIterator last);
 
-			void assign (size_type n, const value_type& val)
-			{
+			// void assign (size_type n, const value_type& val)
+			// {
 				
-			}
+			// }
 
 			void push_front (const value_type& val)
 			{
@@ -224,7 +224,8 @@ namespace ft
 			
 			void clear()
 			{
-
+				while (this->_size > 0)
+					this->pop_back();
 			}
 
 			// void splice (iterator position, list& x);
