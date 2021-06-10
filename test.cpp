@@ -23,7 +23,6 @@ class B : public A
 		}
 };
 
-
 int main()
 {
 	B b;

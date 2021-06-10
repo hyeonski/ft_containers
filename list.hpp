@@ -30,7 +30,7 @@ namespace ft
 			size_t _size;
 			Alloc _alloc;
 			
-			typedef typename Alloc::template rebind< list_node<T> >::other NodeAlloc;
+			typedef typename Alloc::template rebind< list_node<T> >::other NodeAlloc; 
 
 			void deleteNode(list_node<T>* node)
 			{
@@ -85,21 +85,33 @@ namespace ft
 				this->_size = n; //explicitly
 			}
 
-			// template <class InputIterator>
-			// list(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type())
-			// {
+			template <class InputIterator>
+			list(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type()) : _first(NULL), _last(NULL), _size(0)
+			{
+				NodeAlloc nodeAlloc;
+	
+				this->_alloc = alloc;
+				this->_first = nodeAlloc.allocate(1);
+				nodeAlloc.construct(this->_first, list_node<T>());
+				this->_last = _first;
 
-			// }
+				for (InputIterator iter = first; iter != last; iter++)
+					this->push_back(*iter);
+			}
 
 			// list(const list& x)
 			// {
 
 			// }
 			
-			// ~list()
-			// {
-
-			// }
+			~list()
+			{
+				this->clear();
+				
+				NodeAlloc nodeAlloc;
+				nodeAlloc.destroy(this->_first);
+				nodeAlloc.deallocate(this->_first, 1);
+			}
 
 			// list& operator=(const list& x)
 			// {
@@ -135,8 +147,14 @@ namespace ft
 
 			// const_reference back() const;
 
-			// template <class InputIterator>
-			// void assign (InputIterator first, InputIterator last);
+			template <class InputIterator>
+			void assign (InputIterator first, InputIterator last)
+			{
+				this->clear();
+
+				for (InputIterator iter = first; iter != last; iter++)
+					this->push_back(*iter);
+			}
 
 			void assign (size_type n, const value_type& val)
 			{
