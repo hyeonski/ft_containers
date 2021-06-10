@@ -12,7 +12,7 @@ int main()
 	{
 		std::cout << "-------- list default constructor test --------" << std::endl;
 		NS::list<int> list;
-		std::cout << "is empty()?" << list.empty() << std::endl;
+		std::cout << "is empty()?: " << list.empty() << std::endl;
 	}
 
 	{
@@ -20,7 +20,8 @@ int main()
 		int arr[] = {0, 1, 2, 3, 4};
 		NS::list<int> list(arr, arr + 5);
 
-		// iterator로 자료 보여주기 필요
+		NS::list<int>::iterator iter = list.begin();
+		(iter++)++;
 		std::cout << "size(): " << list.size() << std::endl;
 	}
 
@@ -38,7 +39,7 @@ int main()
 		NS::list<int> list(vec.begin(), vec.end());
 
 		// iterator로 자료 보여주기 필요
-		std::cout << "listsize(): " << list.size() << std::endl;
+		std::cout << "list size(): " << list.size() << std::endl;
 	}
 
 	{

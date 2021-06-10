@@ -1,44 +1,29 @@
 #ifndef LIST_HPP
 # define LIST_HPP
 
+# include "enable_if.hpp"
+# include "ListIterator.hpp"
+
 namespace ft
 {
-	template < class T >
-	struct list_node
-	{
-		public:
-			list_node* _prev;
-			list_node* _next;
-			T _value;
-
-			list_node() : _prev(NULL), _next(NULL){}
-			list_node(const T& value) : _prev(NULL), _next(NULL), _value(value) {}
-			list_node(const list_node& ref)
-			{
-				this->_prev = ref._prev;
-				this->_next = ref._next;
-				this->_value = ref._value;
-			}
-	};
-
 	template < class T, class Alloc = std::allocator<T> >
 	class list
 	{
 		private:
-			list_node<T>* _first;
-			list_node<T>* _last;
+			ListNode<T>* _first;
+			ListNode<T>* _last;
 			size_t _size;
 			Alloc _alloc;
 			
-			typedef typename Alloc::template rebind< list_node<T> >::other NodeAlloc; 
+			typedef typename Alloc::template rebind< ListNode<T> >::other NodeAlloc; 
 
-			void deleteNode(list_node<T>* node)
+			void deleteNode(ListNode<T>* node)
 			{
 				// 비어있을 때 delete 처리해 말아?
 				NodeAlloc nodeAlloc;
 
-				list_node<T>* nodePrev = node->_prev;
-				list_node<T>* nodeNext = node->_next;
+				ListNode<T>* nodePrev = node->_prev;
+				ListNode<T>* nodeNext = node->_next;
 	
 				nodeAlloc.destroy(node);
 				nodeAlloc.deallocate(node, 1);
@@ -46,6 +31,7 @@ namespace ft
 				nodeNext->_prev = nodePrev;
 				--this->_size;
 			}
+
 		public:
 			typedef T value_type;
 			typedef Alloc allocator_type;
@@ -53,7 +39,7 @@ namespace ft
 			typedef const value_type& const_reference;
 			typedef value_type* pointer;
 			typedef const value_type* const_pointer;
-			// typedef list_iterator<T> iterator;
+			typedef ListIterator<T> iterator;
 			// typedef list_iterator<T, true> const_iterator;
 			// typedef ft::reverse_iterator<iterator> reverse_iterator;
 			// typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
@@ -65,7 +51,7 @@ namespace ft
 
 				this->_alloc = alloc;
 				this->_first = nodeAlloc.allocate(1);
-				nodeAlloc.construct(this->_first, list_node<T>());
+				nodeAlloc.construct(this->_first, ListNode<T>());
 				this->_last = _first; // end()도 더미노드?
 				this->_size = 0;
 			}
@@ -76,7 +62,7 @@ namespace ft
 	
 				this->_alloc = alloc;
 				this->_first = nodeAlloc.allocate(1);
-				nodeAlloc.construct(this->_first, list_node<T>());
+				nodeAlloc.construct(this->_first, ListNode<T>());
 				this->_last = _first;
 
 				for (size_type i = 0; i < n; i++)
@@ -86,13 +72,13 @@ namespace ft
 			}
 
 			template <class InputIterator>
-			list(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type()) : _first(NULL), _last(NULL), _size(0)
+			list(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(), typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL) : _first(NULL), _last(NULL), _size(0)
 			{
 				NodeAlloc nodeAlloc;
 	
 				this->_alloc = alloc;
 				this->_first = nodeAlloc.allocate(1);
-				nodeAlloc.construct(this->_first, list_node<T>());
+				nodeAlloc.construct(this->_first, ListNode<T>());
 				this->_last = _first;
 
 				for (InputIterator iter = first; iter != last; iter++)
@@ -118,7 +104,10 @@ namespace ft
 
 			// }
 
-			// iterator begin();
+			iterator begin()
+			{
+				return (iterator(this->_first));
+			}
 			// const_iterator begin() const;
 			// iterator end();
 			// const_iterator end() const;
@@ -148,7 +137,7 @@ namespace ft
 			// const_reference back() const;
 
 			template <class InputIterator>
-			void assign (InputIterator first, InputIterator last)
+			void assign (InputIterator first, InputIterator last, typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL)
 			{
 				this->clear();
 
@@ -172,8 +161,8 @@ namespace ft
 			{
 				NodeAlloc nodeAlloc;
 
-				list_node<T> *newNode = nodeAlloc.allocate(1);
-				nodeAlloc.construct(newNode, list_node<T>(val));
+				ListNode<T> *newNode = nodeAlloc.allocate(1);
+				nodeAlloc.construct(newNode, ListNode<T>(val));
 				if (this->_first == this->_last)
 				{
 					this->_first = newNode;
@@ -195,7 +184,7 @@ namespace ft
 
 			void pop_front()
 			{
-				list_node<T>* deleteFront = this->_first;
+				ListNode<T>* deleteFront = this->_first;
 				this->_first = this->_first->_next;
 				this->deleteNode(deleteFront);
 			}
@@ -204,8 +193,8 @@ namespace ft
 			{
 				NodeAlloc nodeAlloc;
 
-				list_node<T> *newNode = nodeAlloc.allocate(1);
-				nodeAlloc.construct(newNode, list_node<T>(val));
+				ListNode<T> *newNode = nodeAlloc.allocate(1);
+				nodeAlloc.construct(newNode, ListNode<T>(val));
 
 				if (this->_first == this->_last)
 				{
@@ -217,7 +206,7 @@ namespace ft
 				}
 				else
 				{
-					list_node<T> *beforeLast = this->_last->_prev;
+					ListNode<T> *beforeLast = this->_last->_prev;
 					beforeLast->_next = newNode;
 					newNode->_prev = beforeLast;
 					newNode->_next = this->_last;
@@ -228,8 +217,10 @@ namespace ft
 
 			void pop_back()
 			{
-				list_node<T>* deleteBack = this->_last->_prev;
+				ListNode<T>* deleteBack = this->_last->_prev;
 				this->deleteNode(deleteBack);
+				if (this->_size == 0)
+					this->_first = this->_last;
 			}
 
 			// iterator insert (iterator position, const value_type& val);
