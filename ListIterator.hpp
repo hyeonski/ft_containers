@@ -32,22 +32,27 @@ namespace ft
 			typedef std::ptrdiff_t difference_type;
 			typedef T* pointer;
 			typedef T& reference;
-			typedef Category iterator_category;
+			typedef const T& const_reference;
+			// typedef Category iterator_category;
 
 			ListNode<T>* ptr; // 고민해보자
 			// commmon
 			ListIterator(ListNode<T>* ptr = NULL) : ptr(ptr) {}
-			// copy constructor
+			template <typename U>
+			ListIterator(ListNode<U>* ptr = NULL) : ptr((ListNode<T>*)ptr) {}
+			template <typename U>
+			ListIterator(const ListIterator<U>& ref) : ptr((ListNode<T>*)ref.ptr) {}
 			ListIterator& operator=(const ListIterator& ref)
 			{
 				if (this != &ref)
 					this->ptr = ref.ptr;
 				return (*this);
 			}
-			// destructor
+
+			virtual ~ListIterator() {}
 			ListIterator& operator++()
 			{
-				++this->ptr;
+				this->ptr = this->ptr->_next;
 				return (*this);
 			}
 
@@ -55,7 +60,7 @@ namespace ft
 			{
 				ListIterator temp(*this);
 
-				++this->ptr;
+				this->ptr = this->ptr->_next;
 				return (temp);
 			}
 
@@ -63,24 +68,53 @@ namespace ft
 			template <typename U>
 			bool operator==(const ListIterator<U>& iter) const
 			{
-				return (this->ptr == iter.ptr);
+				return (this->ptr == (ListNode<T>*)iter.ptr);
 			}
 
 			template <typename U>
 			bool operator!=(const ListIterator<U>& iter) const
 			{
-				return (this->ptr != iter.ptr);
+				return (this->ptr != (ListNode<T>*)iter.ptr);
 			}
 
-			
-			// output
+			reference operator*()
+			{
+				return (this->ptr->_value);
+			}
 
+			const_reference operator*() const
+			{
+				return (this->ptr->_value);
+			}
+
+			pointer operator->()
+			{
+				return (&(this->ptr->_value));
+			}
+
+			const T* operator->() const
+			{
+				return (&(this->ptr->_value));
+			}
+
+			// output
 
 			// forward
 
-
 			// bidirectional
+			ListIterator& operator--()
+			{
+				this->ptr = this->ptr->_prev;
+				return (*this);
+			}
 
+			ListIterator operator--(int)
+			{
+				ListIterator temp(*this);
+
+				this->ptr = this->ptr->_prev;
+				return (temp);
+			}
 	};
 }
 

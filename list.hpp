@@ -1,6 +1,7 @@
 #ifndef LIST_HPP
 # define LIST_HPP
 
+# include <iostream>
 # include "enable_if.hpp"
 # include "ListIterator.hpp"
 
@@ -17,6 +18,25 @@ namespace ft
 			
 			typedef typename Alloc::template rebind< ListNode<T> >::other NodeAlloc; 
 
+			void addNodeFront(ListNode<T>* pos, const T& val)
+			{
+				ListNode<T>* prevNode = pos->_prev;
+				ListNode<T>* nextNode = pos;
+
+				NodeAlloc nodeAlloc;
+				ListNode<T>* newNode = nodeAlloc.allocate(1);
+				nodeAlloc.construct(newNode, ListNode<T>());
+				newNode->_value = val;
+
+				if (pos == this->_first)
+					this->_first = newNode;
+				prevNode->_next = newNode;
+				nextNode->_prev = newNode;
+				newNode->_prev = prevNode;
+				newNode->_next = nextNode;
+				++this->_size;
+			}
+
 			void deleteNode(ListNode<T>* node)
 			{
 				// 비어있을 때 delete 처리해 말아?
@@ -24,14 +44,27 @@ namespace ft
 
 				ListNode<T>* nodePrev = node->_prev;
 				ListNode<T>* nodeNext = node->_next;
-	
+
+				if (node == this->_first)
+					this->_first = this->_first->_next;
 				nodeAlloc.destroy(node);
 				nodeAlloc.deallocate(node, 1);
 				nodePrev->_next = nodeNext;
 				nodeNext->_prev = nodePrev;
 				--this->_size;
+				if (this->_size == 0)
+					this->_first = _last;
 			}
+			void allocateBaseNode()
+			{
+				NodeAlloc nodeAlloc;
 
+				this->_first = nodeAlloc.allocate(1);
+				nodeAlloc.construct(this->_first, ListNode<T>());
+				this->_last = _first;
+				this->_last->_prev = this->_first;
+				this->_last->_next = this->_first;
+			}
 		public:
 			typedef T value_type;
 			typedef Alloc allocator_type;
@@ -40,30 +73,25 @@ namespace ft
 			typedef value_type* pointer;
 			typedef const value_type* const_pointer;
 			typedef ListIterator<T> iterator;
-			// typedef list_iterator<T, true> const_iterator;
+			typedef ListIterator<const T> const_iterator;
 			// typedef ft::reverse_iterator<iterator> reverse_iterator;
 			// typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 			// typedef typename iterator_traits<iterator>::difference_type difference_type;
 			typedef size_t size_type;
 			explicit list(const allocator_type& alloc = allocator_type())
 			{
-				NodeAlloc nodeAlloc;
-
 				this->_alloc = alloc;
-				this->_first = nodeAlloc.allocate(1);
-				nodeAlloc.construct(this->_first, ListNode<T>());
-				this->_last = _first; // end()도 더미노드?
+
+				this->allocateBaseNode();
+
 				this->_size = 0;
 			}
 
 			explicit list(size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type()) : _first(NULL), _last(NULL), _size(0)
 			{
-				NodeAlloc nodeAlloc;
-	
 				this->_alloc = alloc;
-				this->_first = nodeAlloc.allocate(1);
-				nodeAlloc.construct(this->_first, ListNode<T>());
-				this->_last = _first;
+
+				this->allocateBaseNode();
 
 				for (size_type i = 0; i < n; i++)
 					this->push_back(val);
@@ -74,21 +102,21 @@ namespace ft
 			template <class InputIterator>
 			list(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(), typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL) : _first(NULL), _last(NULL), _size(0)
 			{
-				NodeAlloc nodeAlloc;
-	
 				this->_alloc = alloc;
-				this->_first = nodeAlloc.allocate(1);
-				nodeAlloc.construct(this->_first, ListNode<T>());
-				this->_last = _first;
+
+				this->allocateBaseNode();
 
 				for (InputIterator iter = first; iter != last; iter++)
 					this->push_back(*iter);
 			}
 
-			// list(const list& x)
-			// {
-
-			// }
+			list(const list& x)
+			{
+				this->_alloc = x._alloc;
+				this->allocateBaseNode();
+				this->_size = 0;
+				*this = x;
+			}
 			
 			~list()
 			{
@@ -99,18 +127,33 @@ namespace ft
 				nodeAlloc.deallocate(this->_first, 1);
 			}
 
-			// list& operator=(const list& x)
-			// {
-
-			// }
+			list& operator=(const list& x)
+			{
+				if (this != &x)
+					assign(x.begin(), x.end());
+				return (*this);
+			}
 
 			iterator begin()
 			{
 				return (iterator(this->_first));
 			}
-			// const_iterator begin() const;
-			// iterator end();
-			// const_iterator end() const;
+
+			const_iterator begin() const
+			{
+				return (const_iterator(this->_first));
+			}
+			
+			iterator end()
+			{
+				return (iterator(this->_last));
+			}
+			
+			const_iterator end() const
+			{
+				return (const_iterator(this->_last));
+			}
+
 			// reverse_iterator rbegin();
 			// const_reverse_iterator rbegin() const;
 			// reverse_iterator rend();
@@ -126,15 +169,30 @@ namespace ft
 				return (this->_size);
 			}
 
-			// size_type max_size() const;
+			size_type max_size() const
+			{
+				return (NodeAlloc().max_size());
+			}
 
-			// reference front();
+			reference front()
+			{
+				return (this->_first->_value);
+			}
 
-			// const_reference front() const;
+			const_reference front() const
+			{
+				return (this->_first->_value);
+			}
 
-			// reference back();
+			reference back()
+			{
+				return (this->_last->_prev->_value);
+			}
 
-			// const_reference back() const;
+			const_reference back() const
+			{
+				return (this->_last->_prev->_value);
+			}
 
 			template <class InputIterator>
 			void assign (InputIterator first, InputIterator last, typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL)
@@ -149,8 +207,6 @@ namespace ft
 			{
 				this->clear();
 
-				NodeAlloc nodeAlloc;
-
 				for (size_type i = 0; i < n; i++)
 					this->push_back(val);
 
@@ -159,84 +215,93 @@ namespace ft
 
 			void push_front (const value_type& val)
 			{
-				NodeAlloc nodeAlloc;
-
-				ListNode<T> *newNode = nodeAlloc.allocate(1);
-				nodeAlloc.construct(newNode, ListNode<T>(val));
-				if (this->_first == this->_last)
-				{
-					this->_first = newNode;
-					this->_first->_prev = this->_last;
-					this->_first->_next = this->_last;
-					this->_last->_prev = this->_first;
-					this->_last->_next = this->_first;
-				}
-				else
-				{
-					newNode->_prev = this->_last;
-					newNode->_next = this->_first;
-					this->_first->_prev = newNode;
-					this->_first = newNode;
-					this->_last->_next = newNode;
-				}
-				++this->_size;
+				this->addNodeFront(this->_first, val);
 			}
 
 			void pop_front()
 			{
-				ListNode<T>* deleteFront = this->_first;
-				this->_first = this->_first->_next;
-				this->deleteNode(deleteFront);
+				this->deleteNode(this->_first);
 			}
 
 			void push_back(const value_type& val)
 			{
-				NodeAlloc nodeAlloc;
-
-				ListNode<T> *newNode = nodeAlloc.allocate(1);
-				nodeAlloc.construct(newNode, ListNode<T>(val));
-
-				if (this->_first == this->_last)
-				{
-					this->_first = newNode;
-					this->_first->_prev = this->_last;
-					this->_first->_next = this->_last;
-					this->_last->_prev = this->_first;
-					this->_last->_next = this->_first;
-				}
-				else
-				{
-					ListNode<T> *beforeLast = this->_last->_prev;
-					beforeLast->_next = newNode;
-					newNode->_prev = beforeLast;
-					newNode->_next = this->_last;
-					this->_last->_prev = newNode;
-				}
-				++this->_size;
+				this->addNodeFront(this->_last, val);
 			}
 
 			void pop_back()
 			{
 				ListNode<T>* deleteBack = this->_last->_prev;
 				this->deleteNode(deleteBack);
-				if (this->_size == 0)
-					this->_first = this->_last;
 			}
 
-			// iterator insert (iterator position, const value_type& val);
+			iterator insert (iterator position, const value_type& val)
+			{
+				this->addNodeFront(position.ptr, val);
+				return (--position);
+			}
 			
-			// void insert (iterator position, size_type n, const value_type& val);
+			void insert (iterator position, size_type n, const value_type& val)
+			{
+				for (size_type i = 0; i < n; ++i)
+					this->addNodeFront(position.ptr, val);
+			}
 			
-			// template <class InputIterator>
-			// void insert (iterator position, InputIterator first, InputIterator last);
+			template <class InputIterator>
+			void insert (iterator position, InputIterator first, InputIterator last, typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL)
+			{
+				for (InputIterator iter = first; iter != last; iter++)
+					this->addNodeFront(position.ptr, *iter);
+			}
+
+			iterator erase (iterator position)
+			{
+				iterator temp = position++;
+				this->deleteNode(temp.ptr);
+				return (position);
+			}
 			
-			// iterator erase (iterator position);
+			iterator erase (iterator first, iterator last)
+			{
+				iterator temp;
+
+				for (iterator iter = first; iter != last; )
+				{
+					temp = iter++;
+					this->deleteNode(temp.ptr);
+				}
+				return (last);
+			}
+
+			void swap (list& x)
+			{
+				ListNode<T>* temp = x._last;
+				x._last = this->_last;
+				this->_last = temp;
+
+				x._first = x._last->_next;
+				this->_first = this->_last->_next;
+
+				size_type size_temp = x._size;
+				x._size = this->_size;
+				this->_size = size_temp;
+			}
 			
-			// iterator erase (iterator first, iterator last);
-			
-			// void swap (list& x);
-			
-			// void resize (size_type n, value_type val = value_type());
+			void resize (size_type n, value_type val = value_type())
+			{
+				size_type differ;
+				if (n > this->_size)
+				{
+					differ = n - this->_size;
+					for (size_type i = 0; i < differ; ++i)
+						this->push_back(val);
+				}
+				else
+				{
+					differ = this->_size - n;
+					for (size_type i = 0; i < differ; ++i)
+						this->pop_back();
+				}
+			}
 			
 			void clear()
 			{
