@@ -2,7 +2,6 @@
 # define LIST_HPP
 
 # include <iostream>
-# include "enable_if.hpp"
 # include "utils.hpp"
 # include "ListIterator.hpp"
 
@@ -542,6 +541,10 @@ namespace ft
 				this->changePrevNext(this->_base->_next);
 			}
 
+			allocator_type get_allocator() const
+			{
+				return (this->_alloc);
+			}
 	};
 
 	template <class T, class Alloc>
