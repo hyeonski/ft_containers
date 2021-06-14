@@ -1,25 +1,12 @@
-#ifndef LISTITERATOR_HPP
-# define LISTITERATOR_HPP
+#ifndef VECTORITERATOR_HPP
+# define VECTORITERATOR_HPP
 
 # include "utils.hpp"
 
 namespace ft
 {
-	template < class T >
-	struct ListNode
-	{
-		public:
-			ListNode* _prev;
-			ListNode* _next;
-			T _value;
-
-			ListNode() : _prev(NULL), _next(NULL), _value() {}
-			ListNode(const T& value) : _prev(NULL), _next(NULL), _value(value) {}
-			ListNode(const ListNode& ref) : _prev(ref._prev), _next(ref._next), _value(ref._value) {}
-	};
-
 	template<typename T>
-	class ListIterator
+	class VectorIterator
 	{
 		public:
 
@@ -30,68 +17,67 @@ namespace ft
 			typedef const T& const_reference;
 			// typedef Category iterator_category;
 
-			ListNode<T>* ptr; // 고민해보자
+			T* _ptr; // 고민해보자
 			// commmon
-			ListIterator(ListNode<T>* ptr = NULL) : ptr(ptr) {}
 			template <typename U>
-			ListIterator(ListNode<U>* ptr = NULL) : ptr((ListNode<T>*)ptr) {}
+			VectorIterator(U* ptr = NULL) : _ptr((T*)ptr) {}
 			template <typename U>
-			ListIterator(const ListIterator<U>& ref) : ptr((ListNode<T>*)ref.ptr) {}
+			VectorIterator(const VectorIterator<U>& ref) : _ptr((T*)ref._ptr) {}
 			
-			ListIterator<T>& operator=(const ListIterator<T>& ref)
+			VectorIterator<T>& operator=(const VectorIterator<T>& ref)
 			{
 				if (this != &ref)
-					this->ptr = ref.ptr;
+					this->_ptr = ref._ptr;
 				return (*this);
 			}
 
-			virtual ~ListIterator() {}
+			virtual ~VectorIterator() {}
 			
-			ListIterator& operator++()
+			VectorIterator& operator++()
 			{
-				this->ptr = this->ptr->_next;
+				++this->_ptr;
 				return (*this);
 			}
 
-			ListIterator operator++(int)
+			VectorIterator operator++(int)
 			{
-				ListIterator temp(*this);
+				VectorIterator temp(*this);
 
-				this->ptr = this->ptr->_next;
+				++this->_ptr;
 				return (temp);
 			}
 
 			// input
 			template <typename U>
-			bool operator==(const ListIterator<U>& iter) const
+			bool operator==(const VectorIterator<U>& iter) const
 			{
-				return (this->ptr == (ListNode<T>*)iter.ptr);
+				return (this->_ptr == (T*)iter._ptr);
 			}
 
 			template <typename U>
-			bool operator!=(const ListIterator<U>& iter) const
+			bool operator!=(const VectorIterator<U>& iter) const
 			{
-				return (this->ptr != (ListNode<T>*)iter.ptr);
+				return (this->_ptr != (T*)iter._ptr);
 			}
 
 			reference operator*()
 			{
-				return (this->ptr->_value);
+				return (*this->_ptr);
 			}
 
 			const_reference operator*() const
 			{
-				return (this->ptr->_value);
+				return (*this->_ptr);
 			}
 
 			pointer operator->()
 			{
-				return (&(this->ptr->_value));
+				return (&(*this->_ptr));
 			}
 
 			const T* operator->() const
 			{
-				return (&(this->ptr->_value));
+				return (&(*this->_ptr));
 			}
 
 			// output
@@ -99,123 +85,33 @@ namespace ft
 			// forward
 
 			// bidirectional
-			ListIterator& operator--()
+			VectorIterator& operator--()
 			{
-				this->ptr = this->ptr->_prev;
+				--this->_ptr;
 				return (*this);
 			}
 
-			ListIterator operator--(int)
+			VectorIterator operator--(int)
 			{
-				ListIterator temp(*this);
+				VectorIterator temp(*this);
 
-				this->ptr = this->ptr->_prev;
+				--this->_ptr;
 				return (temp);
 			}
+
+			// random access
+			VectorIterator operator+(int n) const;
+			// +
+			// -
+			// -
+			// <
+			// >
+			// <=
+			// >=
+			// +=
+			// -=
+			// []
 	};
 
-	template<typename T>
-	class ListReverseIterator
-	{
-		public:
-			typedef T value_type;
-			typedef std::ptrdiff_t difference_type;
-			typedef T* pointer;
-			typedef T& reference;
-			typedef const T& const_reference;
-			// typedef Category iterator_category;
-
-			ListNode<T>* ptr; // 고민해보자
-
-			// commmon
-			ListReverseIterator(ListNode<T>* ptr = NULL) : ptr(ptr) {}
-			template <typename U>
-			ListReverseIterator(ListNode<U>* ptr = NULL) : ptr((ListNode<T>*)ptr) {}
-			template <typename U>
-			ListReverseIterator(const ListReverseIterator<U>& ref) : ptr((ListNode<T>*)ref.ptr) {}
-			template <typename U>
-			ListReverseIterator(const ListIterator<U>& ref) : ptr((ListNode<T>*)ref.ptr->_prev) {}
-
-			ListReverseIterator<T>& operator=(const ListReverseIterator<T>& ref)
-			{
-				if (this != &ref)
-					this->ptr = ref.ptr;
-				return (*this);
-			}
-
-			virtual ~ListReverseIterator() {}
-			
-			ListReverseIterator& operator++()
-			{
-				this->ptr = this->ptr->_prev;
-				return (*this);
-			}
-
-			ListReverseIterator operator++(int)
-			{
-				ListReverseIterator temp(*this);
-
-				this->ptr = this->ptr->_prev;
-				return (temp);
-			}
-
-			// input
-			template <typename U>
-			bool operator==(const ListReverseIterator<U>& iter) const
-			{
-				return (this->ptr == (ListNode<T>*)iter.ptr);
-			}
-
-			template <typename U>
-			bool operator!=(const ListReverseIterator<U>& iter) const
-			{
-				return (this->ptr != (ListNode<T>*)iter.ptr);
-			}
-
-			reference operator*()
-			{
-				return (this->ptr->_value);
-			}
-
-			const_reference operator*() const
-			{
-				return (this->ptr->_value);
-			}
-
-			pointer operator->()
-			{
-				return (&(this->ptr->_value));
-			}
-
-			const T* operator->() const
-			{
-				return (&(this->ptr->_value));
-			}
-
-			// output
-
-			// forward
-
-			// bidirectional
-			ListReverseIterator& operator--()
-			{
-				this->ptr = this->ptr->_next;
-				return (*this);
-			}
-
-			ListReverseIterator operator--(int)
-			{
-				ListReverseIterator temp(*this);
-
-				this->ptr = this->ptr->_next;
-				return (temp);
-			}
-
-			ListIterator<T> base(void)
-			{
-				return (ListIterator<T>(this->ptr->_next));
-			}
-	};
-}
 
 #endif

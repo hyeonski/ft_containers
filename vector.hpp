@@ -11,10 +11,45 @@ namespace ft
 	class vector
 	{
 		private:
-			T* arr;
+			T* _arr;
 			size_t _size;
 			size_t _capacity;
 			Alloc _alloc;
+
+			class length_error : public std::logic_error
+			{
+				public:
+					explicit length_error (const std::string& what_arg);
+			};
+
+			class out_of_range : public logic_error
+			{
+				public:
+					explicit out_of_range (const std::string& what_arg);
+			};
+
+			void expandCapacity()
+			{
+				if (this->_size <= this->_capacity)
+					return ;
+				if (this->_capacity == 0)
+				{
+					this->_arr = this->alloc.allocate(1);
+					this->_capacity = 1;
+				}
+				else
+				{
+					this->_capacity *= 2;
+					T *temp = this->alloc.allocate(this->_capacity);
+					for (size_type i = 0; i < this->_size; i++)
+					{
+						this->alloc.construct(temp + i, *(this->_arr + i) );
+						this->alloc.destroy(this->_arr + i);
+					}
+					this->alloc.deallocate(this->_arr, this->_capacity / 2);
+					this->_arr = temp;
+				}
+			}
 
 		public:
 			typedef T value_type;
@@ -46,18 +81,24 @@ namespace ft
 				assign(x.begin(), x.end());
 			}
 
+			virtual ~vector()
+			{
+				if (this->arr_capacity > 0)
+				{
+					this->clear();
+					this->alloc.deallocate(this->arr, this->arr_capacity);
+				}
+			}
 
-
-			// virtual ~vector()
-			// {
-			// 	if (this->arr_capacity > 0)
-			// 	{
-			// 		this->clear();
-			// 		this->alloc.deallocate(this->arr, this->arr_capacity);
-			// 	}
-			// }
-
-			// vector& operator= (const vector& x);
+			vector& operator= (const vector& x)
+			{
+				if (this != &x)
+				{
+					this->reserve(x._capacity);
+					assign(x.begin(), x.end());
+				}
+				return (*this);
+			}
 
 			// iterator begin();
 
@@ -75,42 +116,134 @@ namespace ft
 
 			// const_reverse_iterator rend() const;
 
-			// size_type size() const;
+			size_type size() const
+			{
+				return (this->_size);
+			}
 
-			// size_type max_size() const;
+			size_type max_size() const
+			{
+				return (this->_alloc.max_size());
+			}
 
-			// void resize (size_type n, value_type val = value_type());
+			void resize (size_type n, value_type val = value_type())
+			{
+				if (n <= this->_size)
+				{
+					size_type size = this->_size - n;
+					for (size_type i = 0; i < size; i++)
+						this->pop_back();
+				}
+				else
+				{
+					this->capacityExpand();
+					for (size_type i = this->_size; i < n; ++i)
+						this->alloc.construct(this->_arr + i, val);
+					this->_size = n;
+				}
+			}
 
-			// size_type capacity() const;
+			size_type capacity() const
+			{
+				return (this->_capacity);
+			}
 
-			// bool empty() const;
+			bool empty() const
+			{
+				return (this->_size == 0);
+			}
 
-			// void reserve (size_type n);
+			void reserve (size_type n)
+			{
+				if (this->_capacity >= n)
+					return ;
+				if (this->max_size() < n)
+					throw ft::length_error("Error: ft::vector: Length is too long");
+				
+				T* temp = this->_alloc.allocate(n);
+				for (size_type i = 0; i < this->_size; i++)
+				{
+					this->_alloc.construct(temp + i, *(this->_arr + i));
+					this->_alloc.destroy(this->_arr + i);
+				}
+				this->_alloc.deallocate(this->_arr, this->_capacity);
 
-			// reference operator[] (size_type n);
+				this->_arr = temp;
+				this->_capacity = n;
+			}
 
-			// const_reference operator[] (size_type n) const;
+			reference operator[] (size_type n)
+			{
+				return (this->_arr[n]);
+			}
 
-			// reference at (size_type n);
+			const_reference operator[] (size_type n) const
+			{
+				return (this->_arr[n]);
+			}
 
-			// const_reference at (size_type n) const;
+			reference at (size_type n)
+			{
+				if (this->_size <= n)
+					throw ft::out_of_range("Error: ft::vector: Index out of range");
+				return (this->_arr[n]);
+			}
 
-			// reference front();
+			const_reference at (size_type n) const
+			{
+				if (this->_size <= n)
+					throw ft::out_of_range("Error: ft::vector: Index out of range");
+				return (this->_arr[n]);
+			}
 
-			// const_reference front() const;
+			reference front()
+			{
+				return (this->arr[0]);
+			}
 
-			// reference back();
+			const_reference front() const
+			{
+				return (this->arr[0]);
+			}
 
-			// const_reference back() const;
+			reference back()
+			{
+				return (this->arr[arr_size - 1]);
+			}
 
-			// template <class InputIterator>
-			// void assign (InputIterator first, InputIterator last);
+			const_reference back() const
+			{
+				return (this->arr[arr_size - 1]);
+			}
 
-			// void assign (size_type n, const value_type& val);
+			template <class InputIterator>
+			void assign (InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type* = NULL)
+			{
+				this->clear();
+				for (InputIterator iter = first, iter != last, iter++)
+					this->push_back(*iter);
+			}
 
-			// void push_back (const value_type& val);
+			void assign (size_type n, const value_type& val)
+			{
+				this->clear();
+				this->reserve(n);
+				for (size_type i = 0; i < n; i++)
+					this->push_back(val);
+			}
 
-			// void pop_back();
+			void push_back (const value_type& val)
+			{
+				if (this->_capacity == this->_size)
+					this->expandCapacity();
+				this->_alloc.construct(this->_alloc + this->_size, val);
+				++this->_size;
+			}
+
+			void pop_back()
+			{
+				this->_alloc.destroy(this->_arr + (--this->_size));
+			}
 
 			// iterator insert (iterator position, const value_type& val);
 
@@ -125,381 +258,17 @@ namespace ft
 
 			// void swap (vector& x);
 
-			// void clear();
+			void clear()
+			{
+				for (size_type i = 0; i < this->_size; ++i)
+					this->_alloc.destroy(this->_arr + i);
+				this->_size = 0;
+			}
 
-			// allocator_type get_allocator() const;
-
-
-
-
-
-
-			// list& operator=(const list& x)
-			// {
-			// 	if (this != &x)
-			// 		assign(x.begin(), x.end());
-			// 	return (*this);
-			// }
-
-			// iterator begin()
-			// {
-			// 	return (iterator(this->_base->_next));
-			// }
-
-			// const_iterator begin() const
-			// {
-			// 	return (const_iterator(this->_base->_next));
-			// }
-			
-			// iterator end()
-			// {
-			// 	return (iterator(this->_base));
-			// }
-			
-			// const_iterator end() const
-			// {
-			// 	return (const_iterator(this->_base));
-			// }
-
-			// reverse_iterator rbegin()
-			// {
-			// 	return (reverse_iterator(this->_base->_prev));
-			// }
-
-			// const_reverse_iterator rbegin() const
-			// {
-			// 	return (const_reverse_iterator(this->_base->_prev));
-			// }
-
-			// reverse_iterator rend()
-			// {
-			// 	return (reverse_iterator(this->_base));
-			// }
-
-			// const_reverse_iterator rend() const
-			// {
-			// 	return (const_reverse_iterator(this->_base));
-			// }
-
-			// bool empty() const
-			// {
-			// 	return (this->_size == 0);
-			// }
-
-			// size_type size() const
-			// {
-			// 	return (this->_size);
-			// }
-
-			// size_type max_size() const
-			// {
-			// 	return (NodeAlloc().max_size());
-			// }
-
-			// reference front()
-			// {
-			// 	return (this->_base->_next->_value);
-			// }
-
-			// const_reference front() const
-			// {
-			// 	return (this->_base->_next->_value);
-			// }
-
-			// reference back()
-			// {
-			// 	return (this->_base->_prev->_value);
-			// }
-
-			// const_reference back() const
-			// {
-			// 	return (this->_base->_prev->_value);
-			// }
-
-			// template <class InputIterator>
-			// void assign (InputIterator first, InputIterator last, typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL)
-			// {
-			// 	this->clear();
-
-			// 	for (InputIterator iter = first; iter != last; iter++)
-			// 		this->push_back(*iter);
-			// }
-
-			// void assign (size_type n, const value_type& val)
-			// {
-			// 	this->clear();
-
-			// 	for (size_type i = 0; i < n; i++)
-			// 		this->push_back(val);
-
-			// 	this->_size = n; //explicitly
-			// }
-
-			// void push_front (const value_type& val)
-			// {
-			// 	this->addNodeFront(this->_base->_next, val);
-			// }
-
-			// void pop_front()
-			// {
-			// 	this->deleteNode(this->_base->_next);
-			// }
-
-			// void push_back(const value_type& val)
-			// {
-			// 	this->addNodeFront(this->_base, val);
-			// }
-
-			// void pop_back()
-			// {
-			// 	this->deleteNode(this->_base->_prev);
-			// }
-
-			// iterator insert (iterator position, const value_type& val)
-			// {
-			// 	this->addNodeFront(position.ptr, val);
-			// 	return (--position);
-			// }
-			
-			// void insert (iterator position, size_type n, const value_type& val)
-			// {
-			// 	for (size_type i = 0; i < n; ++i)
-			// 		this->addNodeFront(position.ptr, val);
-			// }
-			
-			// template <class InputIterator>
-			// void insert (iterator position, InputIterator first, InputIterator last, typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL)
-			// {
-			// 	for (InputIterator iter = first; iter != last; iter++)
-			// 		this->addNodeFront(position.ptr, *iter);
-			// }
-
-			// iterator erase (iterator position)
-			// {
-			// 	iterator temp = position++;
-			// 	this->deleteNode(temp.ptr);
-			// 	return (position);
-			// }
-			
-			// iterator erase (iterator first, iterator last)
-			// {
-			// 	iterator temp;
-
-			// 	for (iterator iter = first; iter != last; )
-			// 	{
-			// 		temp = iter++;
-			// 		this->deleteNode(temp.ptr);
-			// 	}
-			// 	return (last);
-			// }
-
-			// void swap (list& x)
-			// {
-			// 	ListNode<T>* temp = x._base;
-			// 	x._base = this->_base;
-			// 	this->_base = temp;
-
-			// 	size_type size_temp = x._size;
-			// 	x._size = this->_size;
-			// 	this->_size = size_temp;
-			// }
-			
-			// void resize (size_type n, value_type val = value_type())
-			// {
-			// 	size_type differ;
-			// 	if (n > this->_size)
-			// 	{
-			// 		differ = n - this->_size;
-			// 		for (size_type i = 0; i < differ; ++i)
-			// 			this->push_back(val);
-			// 	}
-			// 	else
-			// 	{
-			// 		differ = this->_size - n;
-			// 		for (size_type i = 0; i < differ; ++i)
-			// 			this->pop_back();
-			// 	}
-			// }
-			
-			// void clear()
-			// {
-			// 	while (this->_size > 0)
-			// 		this->pop_back();
-			// }
-
-			// void splice (iterator position, list& x)
-			// {
-			// 	this->splice(position, x, x.begin(), x.end());
-			// }
-			
-			// void splice (iterator position, list& x, iterator i)
-			// {
-			// 	i.ptr->_prev->_next = i.ptr->_next;
-			// 	i.ptr->_next->_prev = i.ptr->_prev;
-
-			// 	i.ptr->_prev = position.ptr->_prev;
-			// 	i.ptr->_next = position.ptr;
-			// 	position.ptr->_prev->_next = i.ptr;
-			// 	position.ptr->_prev = i.ptr;
-
-			// 	++this->_size;
-			// 	--x._size;
-			// }
-			
-			// void splice (iterator position, list& x, iterator first, iterator last)
-			// {
-			// 	iterator temp;
-
-			// 	for (iterator iter = first; iter != last; )
-			// 	{
-			// 		temp = iter;
-			// 		iter++;
-			// 		this->splice(position, x, temp);
-			// 	}
-			// }
-
-			// void remove (const value_type& val)
-			// {
-			// 	iterator temp;
-
-			// 	for (iterator iter = this->begin(); iter != this->end(); )
-			// 	{
-			// 		temp = iter;
-			// 		iter++;
-			// 		if (*temp == val)
-			// 			this->erase(temp);
-			// 	}
-			// }
-			
-			// template <class Predicate>
-			// void remove_if (Predicate pred)
-			// {
-			// 	iterator temp;
-
-			// 	for (iterator iter = this->begin(); iter != this->end(); )
-			// 	{
-			// 		temp = iter;
-			// 		iter++;
-			// 		if (pred(*temp))
-			// 			this->erase(temp);
-			// 	}
-			// }
-			
-			// void unique()
-			// {
-			// 	ListNode<T>* first = this->_base->_next;
-			// 	ListNode<T>* node;
-
-			// 	while (first != this->_base)
-			// 	{
-			// 		node = first->_next;
-			// 		if (node != this->_base && (first->_value == node->_value))
-			// 		{
-			// 			node = node->_next;
-			// 			this->deleteNode(first->_next);
-			// 			continue ;
-			// 		}
-			// 		first = first->_next;
-			// 	}
-			// }
-			
-			// template <class BinaryPredicate>
-			// void unique (BinaryPredicate binary_pred)
-			// {
-			// 	ListNode<T>* first = this->_base->_next;
-			// 	ListNode<T>* node;
-
-			// 	while (first != this->_base)
-			// 	{
-			// 		node = first->_next;
-			// 		if (node != this->_base && binary_pred(first->_value, node->_value))
-			// 		{
-			// 			node = node->_next;
-			// 			this->deleteNode(first->_next);
-			// 			continue ;
-			// 		}
-			// 		first = first->_next;
-			// 	}
-			// }
-			
-			// void merge (list& x)
-			// {
-			// 	if (&x == this)
-			// 		return ;
-			// 	iterator iter = this->begin();
-			// 	iterator x_iter = x.begin();
-			// 	iterator temp;
-
-			// 	while (x_iter != x.end() && iter != this->end())
-			// 	{
-			// 		if (*x_iter < *iter)
-			// 		{
-			// 			temp = x_iter++;
-			// 			this->splice(iter, x, temp);
-			// 		}
-			// 		else
-			// 			iter++;
-			// 	}
-			// 	this->splice(this->end(), x);
-			// }
-
-			// template <class Compare>	
-			// void merge (list& x, Compare comp)
-			// {
-			// 	if (&x == this)
-			// 		return ;
-			// 	iterator iter = this->begin();
-			// 	iterator x_iter = x.begin();
-			// 	iterator temp;
-
-			// 	while (x_iter != x.end() && iter != this->end())
-			// 	{
-			// 		if (comp(*x_iter, *iter))
-			// 		{
-			// 			temp = x_iter++;
-			// 			this->splice(iter, x, temp);
-			// 		}
-			// 		else
-			// 			iter++;
-			// 	}
-			// 	this->splice(this->end(), x);
-			// }
-			
-			// void sort()
-			// {
-			// 	ListNode<T>* temp = this->_base->_next;
-			// 	while (temp->_next != this->_base)
-			// 	{
-			// 		if (temp->_value > temp->_next->_value)
-			// 		{
-			// 			this->swapNextNode(temp);
-			// 			temp = this->_base->_next;
-			// 		}
-			// 		else
-			// 			temp = temp->_next;
-			// 	}
-			// }
-
-			// template <class Compare>
-			// void sort (Compare comp)
-			// {
-			// 	ListNode<T>* temp = this->_base->_next;
-			// 	while (temp->_next != this->_base)
-			// 	{
-			// 		if (comp(temp->_next->_value, temp->_value))
-			// 		{
-			// 			this->swapNextNode(temp);
-			// 			temp = this->_base->_next;
-			// 		}
-			// 		else
-			// 			temp = temp->_next;
-			// 	}
-			// }
-
-			// void reverse()
-			// {
-			// 	this->changePrevNext(this->_base->_next);
-			// }
+			allocator_type get_allocator() const
+			{
+				return (this->_alloc);
+			}
 
 	};
 
