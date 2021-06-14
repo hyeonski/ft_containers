@@ -1,0 +1,8 @@
+16c16
+< foo::m const called [35]
+---
+> foo::m called [35]
+26c26
+< foo::m const called [7]
+---
+> foo::m called [7]

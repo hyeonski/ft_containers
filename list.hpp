@@ -17,8 +17,8 @@ namespace ft
 			typedef const value_type& const_reference;
 			typedef value_type* pointer;
 			typedef const value_type* const_pointer;
-			typedef ft::ListIterator<T> iterator;
-			typedef ft::ListIterator<const T> const_iterator;
+			typedef ft::ListIterator<T, false> iterator;
+			typedef ft::ListIterator<T, true> const_iterator;
 			typedef ft::reverse_iterator<iterator> reverse_iterator;
 			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 			typedef typename ft::iterator_traits<iterator>::difference_type difference_type;
@@ -299,27 +299,27 @@ namespace ft
 
 			iterator insert (iterator position, const value_type& val)
 			{
-				this->addNodeFront(position.ptr, val);
+				this->addNodeFront(position._ptr, val);
 				return (--position);
 			}
 			
 			void insert (iterator position, size_type n, const value_type& val)
 			{
 				for (size_type i = 0; i < n; ++i)
-					this->addNodeFront(position.ptr, val);
+					this->addNodeFront(position._ptr, val);
 			}
 			
 			template <class InputIterator>
 			void insert (iterator position, InputIterator first, InputIterator last, typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL)
 			{
 				for (InputIterator iter = first; iter != last; iter++)
-					this->addNodeFront(position.ptr, *iter);
+					this->addNodeFront(position._ptr, *iter);
 			}
 
 			iterator erase (iterator position)
 			{
 				iterator temp = position++;
-				this->deleteNode(temp.ptr);
+				this->deleteNode(temp._ptr);
 				return (position);
 			}
 			
@@ -330,7 +330,7 @@ namespace ft
 				for (iterator iter = first; iter != last; )
 				{
 					temp = iter++;
-					this->deleteNode(temp.ptr);
+					this->deleteNode(temp._ptr);
 				}
 				return (last);
 			}
@@ -376,13 +376,13 @@ namespace ft
 			
 			void splice (iterator position, list& x, iterator i)
 			{
-				i.ptr->_prev->_next = i.ptr->_next;
-				i.ptr->_next->_prev = i.ptr->_prev;
+				i._ptr->_prev->_next = i._ptr->_next;
+				i._ptr->_next->_prev = i._ptr->_prev;
 
-				i.ptr->_prev = position.ptr->_prev;
-				i.ptr->_next = position.ptr;
-				position.ptr->_prev->_next = i.ptr;
-				position.ptr->_prev = i.ptr;
+				i._ptr->_prev = position._ptr->_prev;
+				i._ptr->_next = position._ptr;
+				position._ptr->_prev->_next = i._ptr;
+				position._ptr->_prev = i._ptr;
 
 				++this->_size;
 				--x._size;
