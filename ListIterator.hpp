@@ -1,6 +1,7 @@
 #ifndef LISTITERATOR_HPP
 # define LISTITERATOR_HPP
 
+# include "iterator.hpp"
 # include "utils.hpp"
 
 namespace ft
@@ -28,13 +29,14 @@ namespace ft
 			typedef T* pointer;
 			typedef T& reference;
 			typedef const T& const_reference;
-			// typedef Category iterator_category;
+			typedef ft::bidirectional_iterator_tag iterator_category;
 
 			ListNode<T>* ptr; // 고민해보자
 			// commmon
 			ListIterator(ListNode<T>* ptr = NULL) : ptr(ptr) {}
 			template <typename U>
 			ListIterator(ListNode<U>* ptr = NULL) : ptr((ListNode<T>*)ptr) {}
+			// ListIterator(ListNode<U>* ptr = NULL) : ptr(const_cast<ft::ListNode<T>* >(ptr)) {}
 			template <typename U>
 			ListIterator(const ListIterator<U>& ref) : ptr((ListNode<T>*)ref.ptr) {}
 			

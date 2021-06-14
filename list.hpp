@@ -10,6 +10,20 @@ namespace ft
 	template < class T, class Alloc = std::allocator<T> >
 	class list
 	{
+		public:
+			typedef T value_type;
+			typedef Alloc allocator_type;
+			typedef value_type& reference;
+			typedef const value_type& const_reference;
+			typedef value_type* pointer;
+			typedef const value_type* const_pointer;
+			typedef ft::ListIterator<T> iterator;
+			typedef ft::ListIterator<const T> const_iterator;
+			typedef ft::reverse_iterator<iterator> reverse_iterator;
+			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
+			typedef typename ft::iterator_traits<iterator>::difference_type difference_type;
+			typedef size_t size_type;
+
 		private:
 			ListNode<T>* _base;
 			size_t _size;
@@ -113,18 +127,6 @@ namespace ft
 			}
 
 		public:
-			typedef T value_type;
-			typedef Alloc allocator_type;
-			typedef value_type& reference;
-			typedef const value_type& const_reference;
-			typedef value_type* pointer;
-			typedef const value_type* const_pointer;
-			typedef ft::ListIterator<T> iterator;
-			typedef ft::ListIterator<const T> const_iterator;
-			typedef ft::ListReverseIterator<T> reverse_iterator;
-			typedef ft::ListReverseIterator<const T> const_reverse_iterator;
-			// typedef typename iterator_traits<iterator>::difference_type difference_type;
-			typedef size_t size_type;
 			explicit list(const allocator_type& alloc = allocator_type())
 			{
 				this->_alloc = alloc;
@@ -203,22 +205,22 @@ namespace ft
 
 			reverse_iterator rbegin()
 			{
-				return (reverse_iterator(this->_base->_prev));
+				return (reverse_iterator(iterator(this->_base)));
 			}
 
 			const_reverse_iterator rbegin() const
 			{
-				return (const_reverse_iterator(this->_base->_prev));
+				return (const_reverse_iterator(const_iterator(this->_base)));
 			}
 
 			reverse_iterator rend()
 			{
-				return (reverse_iterator(this->_base));
+				return (reverse_iterator(iterator(this->_base->_next)));
 			}
 
 			const_reverse_iterator rend() const
 			{
-				return (const_reverse_iterator(this->_base));
+				return (const_reverse_iterator(const_iterator(this->_base->_next)));
 			}
 
 			bool empty() const

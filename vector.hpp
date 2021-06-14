@@ -100,15 +100,30 @@ namespace ft
 				return (*this);
 			}
 
-			// iterator begin();
+			iterator begin()
+			{
+				return (iterator(this->_arr));
+			}
 
-			// const_iterator begin() const;
+			const_iterator begin() const
+			{
+				return (const_iterator(this->_arr));
+			}
 
-			// iterator end();
+			iterator end()
+			{
+				return (iterator(this->_arr + this->_size));
+			}
 
-			// const_iterator end() const;
+			const_iterator end() const
+			{
+				return (const_iterator(this->_arr + this->_size));
+			}
 
-			// reverse_iterator rbegin();
+			// reverse_iterator rbegin()
+			// {
+			// 	// return (reverse/)
+			// }
 
 			// const_reverse_iterator rbegin() const;
 

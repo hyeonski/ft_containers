@@ -60,12 +60,6 @@ namespace ft
 		static const bool value = true;
 	};
 
-	class iterator_category {};
-	class input_iterator_tag {};
-	class output_iterator_tag {};
-	class bidirectional_iterator_tag : public input_iterator_tag {};
-	class random_access_iterator_tag : public bidirectional_iterator_tag {};
-
 	template <class InputIterator1, class InputIterator2>
 	bool equal(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
 	{
