@@ -28,12 +28,11 @@ namespace ft
 		public:
 			typedef T value_type;
 			typedef std::ptrdiff_t difference_type;
-			typedef T* pointer;
-			typedef T& reference;
-			typedef const T& const_reference;
+			typedef typename choose<IsConst, const T &, T &>::type reference;
+			typedef typename choose<IsConst, const T *, T *>::type pointer;	
 			typedef ft::bidirectional_iterator_tag iterator_category;
 
-			Node* _ptr;
+			Node _ptr;
 
 			// commmon
 			ListIterator(ListNode<T>* ptr = NULL) : _ptr(ptr) {}
@@ -85,22 +84,12 @@ namespace ft
 				return (this->_ptr != iter._ptr);
 			}
 
-			const_reference operator*() const
+			reference operator*() const
 			{
 				return (this->_ptr->_value);
 			}
 
-			reference operator*()
-			{
-				return (this->_ptr->_value);
-			}
-
-			const T* operator->() const
-			{
-				return (&(this->_ptr->_value));
-			}
-
-			pointer operator->()
+			pointer operator->() const
 			{
 				return (&(this->_ptr->_value));
 			}
