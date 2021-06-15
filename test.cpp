@@ -1,6 +1,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
+#include "vector.hpp"
 
 
 template <typename T>
@@ -44,10 +45,12 @@ int main()
 	vec.push_back(4);
 	vec.push_back(5);
 
-	std::vector<int>::iterator iter = vec.end();
-	--iter;
-	std::cout << iter[-1] << std::endl;
-	
+	std::vector<int>::reverse_iterator iter1 = vec.rbegin();
+	std::vector<int>::const_reverse_iterator iter2 = vec.rend();
+
+
+	// for (std::vector<int>::const_iterator iter = vec.begin(); iter != vec.end(); ++iter)
+	// 	std::cout << *iter << std::endl;
 
 	
 }

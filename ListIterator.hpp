@@ -36,8 +36,7 @@ namespace ft
 
 			// commmon
 			ListIterator(ListNode<T>* ptr = NULL) : _ptr(ptr) {}
-			// template <typename U>
-			// ListIterator(ListNode<U>* ptr = NULL) : _ptr(const_cast<ListNode<T>*>(ptr)) {}
+
 			ListIterator(const ListIterator<T, false>& ref) : _ptr(ref._ptr) {}
 			
 			ListIterator& operator=(const ListIterator& ref)
