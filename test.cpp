@@ -38,15 +38,36 @@ class Test
 int main()
 {
 
-	std::vector<int> vec;
-	vec.push_back(1);
-	vec.push_back(2);
-	vec.push_back(3);
-	vec.push_back(4);
-	vec.push_back(5);
+	std::vector<int> vec(7);
+	std::cout << vec.size() << std::endl;
+	std::cout << vec.capacity() << std::endl << std::endl;
 
-	std::vector<int>::reverse_iterator iter1 = vec.rbegin();
-	std::vector<int>::const_reverse_iterator iter2 = vec.rend();
+	std::vector<int> test(vec);
+	std::cout << test.size() << std::endl;
+	std::cout << test.capacity() << std::endl << std::endl;
+
+	std::vector<int> test2(vec.begin(), vec.end());
+	std::cout << test2.size() << std::endl;
+	std::cout << test2.capacity() << std::endl << std::endl;
+
+	std::vector<int> test3;
+	test3.assign(vec.begin(), vec.end());
+	std::cout << test3.size() << std::endl;
+	std::cout << test3.capacity() << std::endl << std::endl;
+
+	vec.pop_back();
+	vec.pop_back();
+
+	std::vector<int> empty;
+	empty = vec;
+	std::cout << empty.size() << std::endl;
+	std::cout << empty.capacity() << std::endl << std::endl;
+
+	std::list<int> list(7);
+
+	std::vector<int> good(list.begin(), list.end());
+	std::cout << good.size() << std::endl;
+	std::cout << good.capacity() << std::endl << std::endl;
 
 
 	// for (std::vector<int>::const_iterator iter = vec.begin(); iter != vec.end(); ++iter)

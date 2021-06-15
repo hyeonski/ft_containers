@@ -21,7 +21,7 @@ Content is:
 - 3
 ###############################################
 size: 7
-capacity: 8
+capacity: 10
 max_size: 4611686018427387903
 
 Content is:
@@ -35,7 +35,7 @@ Content is:
 ###############################################
 	-- PART TWO --
 size: 7
-capacity: 8
+capacity: 7
 max_size: 4611686018427387903
 
 Content is:
@@ -54,7 +54,7 @@ max_size: 4611686018427387903
 Content is:
 ###############################################
 size: 3
-capacity: 8
+capacity: 10
 max_size: 4611686018427387903
 
 Content is:

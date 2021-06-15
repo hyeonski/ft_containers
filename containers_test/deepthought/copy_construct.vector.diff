@@ -2,19 +2,7 @@
 < capacity: 3
 ---
 > capacity: 4
-24c24
-< capacity: 10
----
-> capacity: 8
-38c38
-< capacity: 7
----
-> capacity: 8
 51c51
 < capacity: 3
 ---
 > capacity: 4
-57c57
-< capacity: 10
----
-> capacity: 8

@@ -81,7 +81,9 @@ namespace ft
 
 			vector (const vector& x) : _arr(NULL), _size(0), _capacity(0), _alloc(x._alloc)
 			{
-				assign(x.begin(), x.end());
+				this->reserve(x._size);
+				for (const_iterator iter = x.begin(); iter != x.end(); iter++)
+					this->push_back(*iter);
 			}
 
 			virtual ~vector()
@@ -97,7 +99,7 @@ namespace ft
 			{
 				if (this != &x)
 				{
-					this->reserve(x._capacity);
+					this->reserve(x._size);
 					assign(x.begin(), x.end());
 				}
 				return (*this);
@@ -187,16 +189,19 @@ namespace ft
 					return ;
 				if (this->max_size() < n)
 					throw std::length_error("Error: ft::vector: Length is too long");
-				
-				T* temp = this->_alloc.allocate(n);
-				for (size_type i = 0; i < this->_size; i++)
+				if (this->_arr == NULL)
+					this->_arr = this->_alloc.allocate(n);
+				else
 				{
-					this->_alloc.construct(temp + i, *(this->_arr + i));
-					this->_alloc.destroy(this->_arr + i);
+					T* temp = this->_alloc.allocate(n);
+					for (size_type i = 0; i < this->_size; i++)
+					{
+						this->_alloc.construct(temp + i, *(this->_arr + i));
+						this->_alloc.destroy(this->_arr + i);
+					}
+					this->_alloc.deallocate(this->_arr, this->_capacity);
+					this->_arr = temp;
 				}
-				this->_alloc.deallocate(this->_arr, this->_capacity);
-
-				this->_arr = temp;
 				this->_capacity = n;
 			}
 
@@ -248,8 +253,14 @@ namespace ft
 			void assign (InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type* = NULL)
 			{
 				this->clear();
+
+				size_type n = 0;
+				for (InputIterator iter = first; iter != last; ++iter)
+					++n;
+				this->reserve(n);
 				for (InputIterator iter = first; iter != last; ++iter)
 					this->push_back(*iter);
+				// capacity를 미리 재서 reserve한 후 다시 복사하는게 정상적인 짓일까?
 			}
 
 			void assign (size_type n, const value_type& val)

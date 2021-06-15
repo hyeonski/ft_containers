@@ -143,7 +143,7 @@ Content is:
 - 9
 ###############################################
 size: 5
-capacity: 112
+capacity: 5
 max_size: 4611686018427387903
 
 Content is:
@@ -155,7 +155,7 @@ Content is:
 ###############################################
 is_empty: 1
 size: 0
-capacity: 112
+capacity: 5
 max_size: 4611686018427387903
 
 Content is:
