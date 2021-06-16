@@ -165,8 +165,10 @@ namespace ft
 				}
 				else
 				{
-					while (this->_capacity < n)
+					if (n > this->_capacity && n < this->_capacity * 2)
 						this->expandCapacity();
+					else
+						this->reserve(n);
 					for (size_type i = this->_size; i < n; ++i)
 						this->_alloc.construct(this->_arr + i, val);
 					this->_size = n;
@@ -260,7 +262,6 @@ namespace ft
 				this->reserve(n);
 				for (InputIterator iter = first; iter != last; ++iter)
 					this->push_back(*iter);
-				// capacity를 미리 재서 reserve한 후 다시 복사하는게 정상적인 짓일까?
 			}
 
 			void assign (size_type n, const value_type& val)
@@ -299,8 +300,13 @@ namespace ft
 			void insert (iterator position, size_type n, const value_type& val)
 			{
 				size_type pos = position._ptr - this->_arr;
-				while (this->_capacity < this->_size + n)
-					this->expandCapacity();
+				if (this->_capacity < this->_size + n)
+				{
+					if (this->_size + n > this->_capacity && this->_size + n < this->_capacity * 2)
+						this->expandCapacity();
+					else
+						this->reserve(this->_size + n);
+				}
 				this->shift_elem_back(pos, n);
 				this->_size += n;
 				for (size_type i = 0; i < n; ++i)
@@ -314,8 +320,13 @@ namespace ft
 				size_type n = 0;
 				for (InputIterator temp = first; temp != last; ++temp)
 					++n;
-				while (this->_capacity < this->_size + n)
-					this->expandCapacity();
+				if (this->_capacity < this->_size + n)
+				{
+					if (this->_size + n > this->_capacity && this->_size + n < this->_capacity * 2)
+						this->expandCapacity();
+					else
+						this->reserve(this->_size + n);
+				}
 				this->shift_elem_back(pos, n);
 				this->_size += n;
 				for (size_type i = 0; i < n; ++i)
