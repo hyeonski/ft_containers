@@ -2,6 +2,7 @@
 #include <list>
 #include <vector>
 #include "vector.hpp"
+#include "list.hpp"
 
 
 template <typename T>
@@ -37,41 +38,11 @@ class Test
 
 int main()
 {
-
-	std::vector<int> vec(7);
-	std::cout << vec.size() << std::endl;
-	std::cout << vec.capacity() << std::endl << std::endl;
-
-	std::vector<int> test(vec);
-	std::cout << test.size() << std::endl;
-	std::cout << test.capacity() << std::endl << std::endl;
-
-	std::vector<int> test2(vec.begin(), vec.end());
-	std::cout << test2.size() << std::endl;
-	std::cout << test2.capacity() << std::endl << std::endl;
-
-	std::vector<int> test3;
-	test3.assign(vec.begin(), vec.end());
-	std::cout << test3.size() << std::endl;
-	std::cout << test3.capacity() << std::endl << std::endl;
-
-	vec.pop_back();
-	vec.pop_back();
-
-	std::vector<int> empty;
-	empty = vec;
-	std::cout << empty.size() << std::endl;
-	std::cout << empty.capacity() << std::endl << std::endl;
-
-	std::list<int> list(7);
-
-	std::vector<int> good(list.begin(), list.end());
-	std::cout << good.size() << std::endl;
-	std::cout << good.capacity() << std::endl << std::endl;
-
-
-	// for (std::vector<int>::const_iterator iter = vec.begin(); iter != vec.end(); ++iter)
-	// 	std::cout << *iter << std::endl;
-
+	std::string arr[] = {"0", "1", "2", "3", "4"};
+	unsigned long long a = (unsigned long long)&arr[0];
+	unsigned long long b = (unsigned long long)&arr[5];
 	
+	// ft::list<int> list(a, b);
+	std::list<int> list(a, b);
+	// std::cout << list.max_size() << std::endl;	
 }

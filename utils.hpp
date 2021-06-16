@@ -31,6 +31,12 @@ namespace ft
 	};
 
 	template <>
+	struct is_integral<unsigned char>
+	{
+		static const bool value = true;
+	};
+
+	template <>
 	struct is_integral<wchar_t>
 	{
 		static const bool value = true;
@@ -43,7 +49,19 @@ namespace ft
 	};
 
 	template <>
+	struct is_integral<unsigned short>
+	{
+		static const bool value = true;
+	};
+
+	template <>
 	struct is_integral<int>
+	{
+		static const bool value = true;
+	};
+
+	template <>
+	struct is_integral<unsigned int>
 	{
 		static const bool value = true;
 	};
@@ -55,7 +73,19 @@ namespace ft
 	};
 
 	template <>
+	struct is_integral<unsigned long>
+	{
+		static const bool value = true;
+	};
+
+	template <>
 	struct is_integral<long long>
+	{
+		static const bool value = true;
+	};
+
+	template <>
+	struct is_integral<unsigned long long>
 	{
 		static const bool value = true;
 	};
