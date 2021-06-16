@@ -129,8 +129,12 @@ class BinarySearchTree
 					else
 						parent->_right = subTree;
 				}
-				else
-					toDelete->_left->_parent = NULL;
+				else // 지우려는 노드가 루트 노드인 경우
+				{
+					TreeNode* newRoot = toDelete->_left;
+					newRoot->_parent = NULL;
+					this->_root = newRoot;
+				}
 				delete toDelete;
 			}
 			// 오른쪽 서브트리만 가지는 경우
@@ -151,8 +155,12 @@ class BinarySearchTree
 					else
 						parent->_right = subTree;
 				}
-				else
-					toDelete->_right->_parent = NULL;
+				else // 지우려는 노드가 루트 노드인 경우
+				{
+					TreeNode* newRoot = toDelete->_right;
+					newRoot->_parent = NULL;
+					this->_root = newRoot;
+				}
 				delete toDelete;
 			}
 			// 오른쪽 왼쪽 서브트리 모두 가질 경우
@@ -297,22 +305,45 @@ class BinarySearchTree
 
 int main(void)
 {
+	// srand(clock());
+
 	BinarySearchTree bst;
 	for (int i = 0; i < 20; ++i)
-		bst.insertValue(i * 3);
+		bst.insertValue(rand() % 100);
 	bst.printInOrder(bst._root);
 	std::cout << std::endl;
 
-	TreeNode* finded = bst.findValue(41);
+
+	std::cout << std::endl << "find test" << std::endl;
+	int toDelete;
+
+	toDelete = rand() % 100;
+	TreeNode* finded = bst.findValue(toDelete);
 	if (finded == NULL)
-		std::cout << "good" << std::endl;
-	
-	finded = bst.findValue(15);
-	std::cout << "finded:" << finded->_data << std::endl;
-	
+		std::cout << "not founded " << toDelete << "!" << std::endl;
+	else
+	{
+		std::cout << "tried to find " << toDelete << ":" << std::endl;
+		std::cout << "finded:" << finded->_data << std::endl;
+	}
+
+
+	toDelete = rand() % 100;
+	finded = bst.findValue(toDelete);
+	if (finded == NULL)
+		std::cout << "not founded " << toDelete << "!" << std::endl;
+	else
+	{
+		std::cout << "tried to find " << toDelete << ":" << std::endl;
+		std::cout << "finded:" << finded->_data << std::endl;
+	}
+
+	std::cout << std::endl << "delete test" << std::endl;
 	for (int i = 0; i < 10; ++i)
 	{
-		bst.deleteValue(i * 6);
+		toDelete = rand() % 100;
+		bst.deleteValue(toDelete);
+		std::cout << "try to delete:" << toDelete << std::endl;
 		bst.printInOrder(bst._root);
 		std::cout << std::endl;
 	}
