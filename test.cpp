@@ -3,6 +3,7 @@
 #include <vector>
 #include "vector.hpp"
 #include "list.hpp"
+#include <map>
 
 
 template <typename T>
@@ -38,11 +39,14 @@ class Test
 
 int main()
 {
-	std::string arr[] = {"0", "1", "2", "3", "4"};
-	unsigned long long a = (unsigned long long)&arr[0];
-	unsigned long long b = (unsigned long long)&arr[5];
-	
-	// ft::list<int> list(a, b);
-	std::list<int> list(a, b);
-	// std::cout << list.max_size() << std::endl;	
+	std::multimap<int, int> map;
+	map.insert(std::pair<int, int>(1, 100));
+	map.insert(std::pair<int, int>(1, 200));
+	map.insert(std::pair<int, int>(1, 50));
+
+	map.erase(1);
+	for (std::multimap<int, int>::const_iterator iter = map.begin(); iter != map.end(); ++iter)
+	{
+		std::cout << iter->second << std::endl;
+	}
 }
