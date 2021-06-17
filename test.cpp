@@ -39,14 +39,17 @@ class Test
 
 int main()
 {
-	std::multimap<int, int> map;
-	map.insert(std::pair<int, int>(1, 100));
-	map.insert(std::pair<int, int>(1, 200));
-	map.insert(std::pair<int, int>(1, 50));
+	std::map<int, int> map;
 
-	map.erase(1);
-	for (std::multimap<int, int>::const_iterator iter = map.begin(); iter != map.end(); ++iter)
-	{
-		std::cout << iter->second << std::endl;
-	}
+	map[1] = 1;
+	map[2] = 1;
+	map[3] = 1;
+	map[4] = 1;
+	map[5] = 1;
+
+	std::map<int, int>::iterator iter = map.find(4);
+
+	std::cout << &iter->first << std::endl;
+	map.erase(3);
+	std::cout << &iter->first << std::endl;
 }

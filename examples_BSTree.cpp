@@ -6,8 +6,12 @@ struct TreeNode
 	TreeNode* _left;
 	TreeNode* _right;
 	int _data;
-	TreeNode() : _parent(NULL), _left(NULL), _right(NULL), _data(0) {}
-	TreeNode(int value, TreeNode* parent) : _parent(parent), _left(NULL), _right(NULL), _data(value) {}
+
+	// rbtree
+	bool _red;
+
+	TreeNode() : _parent(NULL), _left(NULL), _right(NULL), _data(0), _red(true) {}
+	TreeNode(int value, TreeNode* parent) : _parent(parent), _left(NULL), _right(NULL), _data(value), _red(true) {}
 	~TreeNode() {}
 };
 
@@ -43,7 +47,7 @@ class BinarySearchTree
 			}
 		}
 
-		TreeNode* insertValue(int value) // 중복이면 오른쪽 서브트리에 삽입 - 그래야 중위순회 시 먼저 들어온 순서대로 출력된다
+		virtual TreeNode* insertValue(int value) // 중복이면 오른쪽 서브트리에 삽입 - 그래야 중위순회 시 먼저 들어온 순서대로 출력된다
 		{
 			TreeNode* curr = this->_root;
 			if (this->_root == NULL) // 빈 트리일 경우
@@ -87,7 +91,7 @@ class BinarySearchTree
 				}
 			}
 		}
-		void deleteValue(int value)
+		virtual void deleteValue(int value)
 		{
 			TreeNode* toDelete = this->findValue(value);
 			if (toDelete == NULL)
@@ -177,7 +181,7 @@ class BinarySearchTree
 			
 		}
 
-		bool isNodeParentLeft(TreeNode* parent, TreeNode* node)
+		virtual bool isNodeParentLeft(TreeNode* parent, TreeNode* node)
 		{
 			if (parent->_left == node)
 				return (true);
@@ -185,7 +189,7 @@ class BinarySearchTree
 				return (false);
 		}
 
-		TreeNode* getMaxNode(TreeNode* root) // 반복문
+		virtual TreeNode* getMaxNode(TreeNode* root) // 반복문
 		{
 			TreeNode* curr = root;
 			if (root == NULL)
@@ -208,7 +212,7 @@ class BinarySearchTree
 		// 	return (this->getMaxNode(root->_right));
 		// }
 
-		TreeNode* getMinNode(TreeNode* root) // 반복문
+		virtual TreeNode* getMinNode(TreeNode* root) // 반복문
 		{
 			TreeNode* curr = root;
 			if (root == NULL)
@@ -231,7 +235,7 @@ class BinarySearchTree
 		// 	return (this->getMaxNode(root->_left));
 		// }
 
-		void swapNode(TreeNode* a, TreeNode* b)
+		virtual void swapNode(TreeNode* a, TreeNode* b)
 		{
 			// 부모 자식 바꿔주는게 조금 귀찮음...
 			TreeNode* tempParent = a->_parent;
@@ -295,28 +299,28 @@ class BinarySearchTree
 		}
 };
 
-int main(void)
-{
-	BinarySearchTree bst;
-	for (int i = 0; i < 20; ++i)
-		bst.insertValue(i * 3);
-	bst.printInOrder(bst._root);
-	std::cout << std::endl;
+// int main(void)
+// {
+// 	BinarySearchTree bst;
+// 	for (int i = 0; i < 20; ++i)
+// 		bst.insertValue(i * 3);
+// 	bst.printInOrder(bst._root);
+// 	std::cout << std::endl;
 
-	TreeNode* finded = bst.findValue(41);
-	if (finded == NULL)
-		std::cout << "good" << std::endl;
+// 	TreeNode* finded = bst.findValue(41);
+// 	if (finded == NULL)
+// 		std::cout << "good" << std::endl;
 	
-	finded = bst.findValue(15);
-	std::cout << "finded:" << finded->_data << std::endl;
+// 	finded = bst.findValue(15);
+// 	std::cout << "finded:" << finded->_data << std::endl;
 	
-	for (int i = 0; i < 10; ++i)
-	{
-		bst.deleteValue(i * 6);
-		bst.printInOrder(bst._root);
-		std::cout << std::endl;
-	}
-	bst.printInOrder(bst._root);
-	std::cout << std::endl;
+// 	for (int i = 0; i < 10; ++i)
+// 	{
+// 		bst.deleteValue(i * 6);
+// 		bst.printInOrder(bst._root);
+// 		std::cout << std::endl;
+// 	}
+// 	bst.printInOrder(bst._root);
+// 	std::cout << std::endl;
 	
-}
+// }
