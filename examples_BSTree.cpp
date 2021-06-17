@@ -307,51 +307,51 @@ class BinarySearchTree
 		}
 };
 
-int main(void)
-{
-	// srand(clock());
+// int main(void)
+// {
+// 	// srand(clock());
 
-	BinarySearchTree bst;
-	for (int i = 0; i < 20; ++i)
-		bst.insertValue(rand() % 100);
-	bst.printInOrder(bst._root);
-	std::cout << std::endl;
-
-
-	std::cout << std::endl << "find test" << std::endl;
-	int toDelete;
-
-	toDelete = rand() % 100;
-	TreeNode* finded = bst.findValue(toDelete);
-	if (finded == NULL)
-		std::cout << "not founded " << toDelete << "!" << std::endl;
-	else
-	{
-		std::cout << "tried to find " << toDelete << ":" << std::endl;
-		std::cout << "finded:" << finded->_data << std::endl;
-	}
+// 	BinarySearchTree bst;
+// 	for (int i = 0; i < 20; ++i)
+// 		bst.insertValue(rand() % 100);
+// 	bst.printInOrder(bst._root);
+// 	std::cout << std::endl;
 
 
-	toDelete = rand() % 100;
-	finded = bst.findValue(toDelete);
-	if (finded == NULL)
-		std::cout << "not founded " << toDelete << "!" << std::endl;
-	else
-	{
-		std::cout << "tried to find " << toDelete << ":" << std::endl;
-		std::cout << "finded:" << finded->_data << std::endl;
-	}
+// 	std::cout << std::endl << "find test" << std::endl;
+// 	int toDelete;
 
-	std::cout << std::endl << "delete test" << std::endl;
-	for (int i = 0; i < 10; ++i)
-	{
-		toDelete = rand() % 100;
-		bst.deleteValue(toDelete);
-		std::cout << "try to delete:" << toDelete << std::endl;
-		bst.printInOrder(bst._root);
-		std::cout << std::endl;
-	}
-	bst.printInOrder(bst._root);
-	std::cout << std::endl;
+// 	toDelete = rand() % 100;
+// 	TreeNode* finded = bst.findValue(toDelete);
+// 	if (finded == NULL)
+// 		std::cout << "not founded " << toDelete << "!" << std::endl;
+// 	else
+// 	{
+// 		std::cout << "tried to find " << toDelete << ":" << std::endl;
+// 		std::cout << "finded:" << finded->_data << std::endl;
+// 	}
+
+
+// 	toDelete = rand() % 100;
+// 	finded = bst.findValue(toDelete);
+// 	if (finded == NULL)
+// 		std::cout << "not founded " << toDelete << "!" << std::endl;
+// 	else
+// 	{
+// 		std::cout << "tried to find " << toDelete << ":" << std::endl;
+// 		std::cout << "finded:" << finded->_data << std::endl;
+// 	}
+
+// 	std::cout << std::endl << "delete test" << std::endl;
+// 	for (int i = 0; i < 10; ++i)
+// 	{
+// 		toDelete = rand() % 100;
+// 		bst.deleteValue(toDelete);
+// 		std::cout << "try to delete:" << toDelete << std::endl;
+// 		bst.printInOrder(bst._root);
+// 		std::cout << std::endl;
+// 	}
+// 	bst.printInOrder(bst._root);
+// 	std::cout << std::endl;
 	
 // }
