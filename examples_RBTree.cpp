@@ -210,8 +210,8 @@ class RBTree
 			
 			char buf[sizeof(TreeNode)];
 			memcpy(buf, a, sizeof(TreeNode));
-			memcpy(a, b, sizeof(TreeNode));
-			memcpy(b, buf, sizeof(TreeNode));
+			memcpy(a, b, sizeof(TreeNode)); // 포인터 뿐만 아니라 color도 바꿔주어야 RB 속성 유지 가능
+			memcpy(b, buf, sizeof(TreeNode)); // 값만 바꾸는 흉내를 낸다고 생각하면 편함
 			a->_key = temp_a._key;
 			b->_key = temp_b._key;
 		}
