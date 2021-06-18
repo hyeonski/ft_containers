@@ -32,7 +32,7 @@ class RBTree
 		TreeNode* findKey(int key)
 		{
 			TreeNode* curr = this->_root;
-
+			// std::cout << key << std::endl;
 			if (this->_root == this->_leaf) // isEmpty
 				return (NULL);
 
@@ -66,8 +66,8 @@ class RBTree
 				if (curr == this->_leaf)
 					break ;
 				parent = curr;
-				if (curr->_key == key)
-					return (NULL);
+				// if (curr->_key == key)
+				// 	return (NULL);
 				if (curr->_key > key)
 					curr = curr->_left;
 				else
@@ -89,11 +89,17 @@ class RBTree
 
 		void deleteKey(int key)
 		{
-			TreeNode* toDelete = this->findKey(key);
-			if (toDelete == NULL)
-				return ;
+			TreeNode* toDelete;
+			while (1)
+			{
+				toDelete = this->findKey(key);
+				if (toDelete == NULL)
+					return ;
 
-			this->_deleteNode(toDelete);
+				// std::cout << key << std::endl;
+				// this->show_tree(this->_root, "", true);
+				this->_deleteNode(toDelete);
+			}
 		}
 
 		void _deleteNode(TreeNode* toDelete)
@@ -124,9 +130,13 @@ class RBTree
 						parent->_left = subTree;
 					else
 						parent->_right = subTree;
+					subTree->_parent = parent;
 				}
 				else
+				{
 					toDelete->_left->_parent = NULL; // 루트 노드 삭제 시 서브트리의 루트를 전체 루트로 만든다
+					this->_root = toDelete->_left;
+				}
 				delete toDelete;
 			}
 			// 오른쪽 서브트리만 가지는 경우
@@ -139,9 +149,13 @@ class RBTree
 						parent->_left = subTree;
 					else
 						parent->_right = subTree;
+					subTree->_parent = parent;
 				}
 				else
+				{
 					toDelete->_right->_parent = NULL;
+					this->_root = toDelete->_right;
+				}
 				delete toDelete;
 			}
 			// 오른쪽 왼쪽 서브트리 모두 가질 경우
@@ -156,7 +170,6 @@ class RBTree
 
 				this->_swapNode(toDelete, switch_child); // 선택된 단말 노드와 위치 바꿈
 				this->_deleteNode(toDelete);
-
 			}
 		}
 
@@ -173,6 +186,8 @@ class RBTree
 				else
 					a->_parent->_right = b;
 			}
+			else
+				this->_root = b;
 			if (b->_parent != NULL)
 			{
 				if (this->_isNodeParentLeft(b))
@@ -180,6 +195,8 @@ class RBTree
 				else
 					b->_parent->_right = a;
 			}
+			else
+				this->_root = a;
 
 			// 두 노드 자식들의 부모 포인터 변경
 			if (temp_a._left != this->_leaf)
@@ -195,6 +212,8 @@ class RBTree
 			memcpy(buf, a, sizeof(TreeNode));
 			memcpy(a, b, sizeof(TreeNode));
 			memcpy(b, buf, sizeof(TreeNode));
+			a->_key = temp_a._key;
+			b->_key = temp_b._key;
 		}
 
 		virtual bool _isNodeParentLeft(TreeNode* node)
@@ -404,6 +423,7 @@ class RBTree
 			if (root == this->_leaf)
 				return ;
 			this->printInorder(root->_left);
+			this->vector.push_back(root->_key);
 			std::cout << root->_key << " ";
 			this->printInorder(root->_right);
 		}
@@ -457,93 +477,41 @@ class RBTree
 
 int main()
 {
+	// srand(clock());
 	RBTree tree;
 
 	for (int i = 0; i < 100; ++i)
 		tree.insertKey(rand() % 100);
+
 	tree.printInorder(tree._root);
 	std::cout << std::endl;
-
-	// for (int i = 0; i < 100; ++i)
-	// 	tree.deleteKey(i);
 	tree.show_tree(tree._root, "", true);
 
-	tree.deleteKey(7);
 
-	// tree.show_tree(tree._root, "", true);
+	for (int i = 0; i < 100; ++i)
+		tree.deleteKey(rand() % 100);
+
+	tree.show_tree(tree._root, "", true);
+	tree.vector.clear();
 	tree.printInorder(tree._root);
 	std::cout << std::endl;
+
+
+	// for (int i = 0; i < tree.vector.size(); ++i)
+	// {
+	// 	std::cout << tree.vector[i] << " ";
+	// 	if (i != tree.vector.size() - 1)
+	// 		if (tree.vector[i] > tree.vector[i+1])
+	// 		{
+	// 			std::cout << "error!" << std::endl;
+	// 			break ;	
+	// 		}
+	// }
+	// std::cout << std::endl;
+
 	// tree.check_traversal();
 	// std::sort(tree.vector.begin(), tree.vector.end());
 	// for (std::vector<int>::iterator iter = tree.vector.begin(); iter != tree.vector.end(); iter++)
 	// 	std::cout << *iter << " ";
 	// std::cout << std::endl;
 }
-
-
-// R----49(BLACK)
-//      L----27(BLACK)
-//      |    L----9(RED)
-//      |    |    L----3(BLACK)
-//      |    |    |    L----1(BLACK)
-//      |    |    |    R----7(RED)
-//      |    |    |         L----5(BLACK)
-//      |    |    |         |    L----4(RED)
-//      |    |    |         R----8(BLACK)
-//      |    |    R----16(BLACK)
-//      |    |         L----12(RED)
-//      |    |         |    L----10(BLACK)
-//      |    |         |    R----14(BLACK)
-//      |    |         |         L----13(RED)
-//      |    |         |         R----15(RED)
-//      |    |         R----23(RED)
-//      |    |              L----21(BLACK)
-//      |    |              |    L----17(RED)
-//      |    |              |    R----22(RED)
-//      |    |              R----25(BLACK)
-//      |    |                   L----24(RED)
-//      |    |                   R----26(RED)
-//      |    R----35(RED)
-//      |         L----30(BLACK)
-//      |         |    L----29(BLACK)
-//      |         |    |    L----28(RED)
-//      |         |    R----33(BLACK)
-//      |         R----42(BLACK)
-//      |              L----37(RED)
-//      |              |    L----36(BLACK)
-//      |              |    R----40(BLACK)
-//      |              |         L----38(RED)
-//      |              R----44(BLACK)
-//      |                   R----45(RED)
-//      R----85(RED)
-//           L----72(BLACK)
-//           |    L----65(RED)
-//           |    |    L----58(BLACK)
-//           |    |    |    L----53(RED)
-//           |    |    |    |    L----51(BLACK)
-//           |    |    |    |    |    R----52(RED)
-//           |    |    |    |    R----57(BLACK)
-//           |    |    |    R----60(BLACK)
-//           |    |    |         R----63(RED)
-//           |    |    R----68(BLACK)
-//           |    |         L----67(BLACK)
-//           |    |         |    L----66(RED)
-//           |    |         R----69(BLACK)
-//           |    R----78(BLACK)
-//           |         L----73(BLACK)
-//           |         |    R----77(RED)
-//           |         R----81(BLACK)
-//           |              L----79(RED)
-//           |              R----82(RED)
-//           R----94(BLACK)
-//                L----92(BLACK)
-//                |    L----90(RED)
-//                |    |    L----87(BLACK)
-//                |    |    |    R----88(RED)
-//                |    |    R----91(BLACK)
-//                |    R----93(BLACK)
-//                R----97(BLACK)
-//                     L----96(BLACK)
-//                     |    L----95(RED)
-//                     R----99(BLACK)
-//                          L----98(RED)
