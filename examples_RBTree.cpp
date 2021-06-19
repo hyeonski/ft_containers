@@ -123,40 +123,16 @@ class RBTree
 			// 왼쪽 서브트리만 가지는 경우
 			else if (toDelete->_left != this->_leaf && toDelete->_right == this->_leaf)
 			{
-				if (parent != NULL)
-				{
-					TreeNode* subTree = toDelete->_left;
-					if (this->_isNodeParentLeft(toDelete))
-						parent->_left = subTree;
-					else
-						parent->_right = subTree;
-					subTree->_parent = parent;
-				}
-				else
-				{
-					toDelete->_left->_parent = NULL; // 루트 노드 삭제 시 서브트리의 루트를 전체 루트로 만든다
-					this->_root = toDelete->_left;
-				}
-				delete toDelete;
+				TreeNode *switch_child = this->_getMaxNode(toDelete->_left); // 왼쪽 서브트리의 최댓값 찾기
+				this->_swapNode(toDelete, switch_child);
+				this->_deleteNode(toDelete);
 			}
 			// 오른쪽 서브트리만 가지는 경우
 			else if (toDelete->_left == this->_leaf && toDelete->_right != this->_leaf)
 			{
-				TreeNode* subTree = toDelete->_right;
-				if (parent != NULL)
-				{
-					if (this->_isNodeParentLeft(toDelete))
-						parent->_left = subTree;
-					else
-						parent->_right = subTree;
-					subTree->_parent = parent;
-				}
-				else
-				{
-					toDelete->_right->_parent = NULL;
-					this->_root = toDelete->_right;
-				}
-				delete toDelete;
+				TreeNode *switch_child = this->_getMinNode(toDelete->_right); // 왼쪽 서브트리의 최댓값 찾기
+				this->_swapNode(toDelete, switch_child);
+				this->_deleteNode(toDelete);
 			}
 			// 오른쪽 왼쪽 서브트리 모두 가질 경우
 			// 왼쪽 서브트리의 가장 큰 값 또는 오른쪽 가장 작은 값을 가진 노드를 연결한다
@@ -483,10 +459,9 @@ int main()
 	for (int i = 0; i < 100; ++i)
 		tree.insertKey(rand() % 100);
 
+	tree.show_tree(tree._root, "", true);
 	tree.printInorder(tree._root);
 	std::cout << std::endl;
-	tree.show_tree(tree._root, "", true);
-
 
 	for (int i = 0; i < 100; ++i)
 		tree.deleteKey(rand() % 100);
@@ -497,6 +472,8 @@ int main()
 	std::cout << std::endl;
 
 
+	// tree.check_traversal();
+	// std::sort(tree.vector.begin(), tree.vector.end());
 	// for (int i = 0; i < tree.vector.size(); ++i)
 	// {
 	// 	std::cout << tree.vector[i] << " ";
@@ -509,8 +486,6 @@ int main()
 	// }
 	// std::cout << std::endl;
 
-	// tree.check_traversal();
-	// std::sort(tree.vector.begin(), tree.vector.end());
 	// for (std::vector<int>::iterator iter = tree.vector.begin(); iter != tree.vector.end(); iter++)
 	// 	std::cout << *iter << " ";
 	// std::cout << std::endl;
