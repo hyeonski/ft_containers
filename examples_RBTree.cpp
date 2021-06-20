@@ -109,6 +109,7 @@ class RBTree
 			// 삭제하려는 노드의 자식노드가 없는 경우
 			if (toDelete->_left == this->_leaf && toDelete->_right == this->_leaf)
 			{
+				this->_deleteFixUp(toDelete);
 				if (parent != NULL)
 				{
 					if (this->_isNodeParentLeft(toDelete)) // 지우려는 노드가 부모의 왼쪽인지 오른쪽인지 파악하여 link 끊어준다
@@ -148,6 +149,114 @@ class RBTree
 				this->_deleteNode(toDelete);
 			}
 		}
+
+		void _deleteFixUp(TreeNode* node)
+		{
+			if (node->_color == RED) // red 삭제 시 종료
+				return ;
+			this->_delete_case1(node);
+		}
+		
+		void _delete_case1(TreeNode* node)
+		{
+			if (node->_parent == NULL) // root 삭제 시 종료
+				return ;
+			this->_delete_case2(node);
+		}
+
+		void _delete_case2(TreeNode* node) // double black의 형제가 red일 경우
+		{
+			TreeNode* sibling = this->sibling(node);
+
+			if (sibling->_color == RED)
+			{
+				node->_parent->_color = RED; // parent와 sibling color swap
+				sibling->_color = BLACK; // sibling이 red이므로 부모는 무조건 black, 즉 색을 정해주기만 해도 된다
+				if (this->_isNodeParentLeft(node))
+					this->rotate_left(node->_parent);
+				else
+					this->rotate_right(node->_parent);
+			}
+			this->_delete_case3(node);
+		}
+
+		void _delete_case3(TreeNode* node)
+		{
+			TreeNode* sibling = this->sibling(node);
+
+			if ((node->_parent->_color == BLACK)
+				&& (sibling->_color == BLACK)
+				&& (sibling->_left->_color == BLACK)
+				&& (sibling->_right->_color == BLACK))
+			{
+				sibling->_color = RED;
+				this->_delete_case1(node->_parent);
+			}
+			else
+				this->_delete_case4(node);
+		}
+
+		void _delete_case4(TreeNode* node)
+		{
+			TreeNode* sibling = this->sibling(node);
+
+			if ((node->_parent->_color == RED)
+				&& (sibling->_color == BLACK)
+				&& (sibling->_left->_color == BLACK)
+				&& (sibling->_right->_color == BLACK))
+			{
+				sibling->_color = RED;
+				node->_parent->_color = BLACK;
+			}
+			else
+				this->_delete_case5(node);
+		}
+
+		void _delete_case5(TreeNode* node)
+		{
+			TreeNode* sibling = this->sibling(node);
+
+			if  (sibling->_color == BLACK)
+			{
+				if ((node == node->_parent->_left)
+					&& (sibling->_right->_color == BLACK)
+					&& (sibling->_left->_color == RED))
+				{
+					sibling->_color = RED;
+					sibling->_left->_color = BLACK;
+					this->rotate_right(sibling);
+				}
+				else if ((node == node->_parent->_right)
+				&& (sibling->_left->_color == BLACK)
+				&& (sibling->_right->_color == RED))
+				{
+					sibling->_color = RED;
+					sibling->_right->_color = BLACK;
+					this->rotate_left(sibling);
+				}
+			}
+			this->_delete_case6(node);
+		}
+
+		void _delete_case6(TreeNode* node)
+		{
+			TreeNode* sibling = this->sibling(node);
+
+			sibling->_color = node->_parent->_color; // 부모-형제 color swap
+			node->_parent->_color = BLACK;
+
+			if (node == node->_parent->_left)
+			{
+				sibling->_right->_color = BLACK;
+				this->rotate_left(node->_parent);
+			}
+			else
+			{
+				sibling->_left->_color = BLACK;
+				this->rotate_right(node->_parent);
+			}
+		}
+
 
 		virtual void _swapNode(TreeNode* a, TreeNode* b)
 		{
@@ -190,6 +299,14 @@ class RBTree
 			memcpy(b, buf, sizeof(TreeNode)); // 값만 바꾸는 흉내를 낸다고 생각하면 편함
 			a->_key = temp_a._key;
 			b->_key = temp_b._key;
+		}
+
+		TreeNode* sibling(TreeNode* node)
+		{
+			if (node == node->_parent->_left)
+				return node->_parent->_right;
+			else
+				return node->_parent->_left;
 		}
 
 		virtual bool _isNodeParentLeft(TreeNode* node)
@@ -345,6 +462,8 @@ class RBTree
 				else
 					parent->_right = rightChild;
 			}
+			else
+				this->_root = rightChild;
 		}
 
 		void rotate_right(TreeNode* node)
@@ -367,6 +486,8 @@ class RBTree
 				else
 					parent->_left = leftChild;
 			}
+			else
+				this->_root = leftChild;
 		}
 
 		/*show tree*/
@@ -453,7 +574,7 @@ class RBTree
 
 int main()
 {
-	// srand(clock());
+	srand(clock());
 	RBTree tree;
 
 	for (int i = 0; i < 100; ++i)
@@ -472,21 +593,25 @@ int main()
 	std::cout << std::endl;
 
 
+	for (int i = 0; i < tree.vector.size(); ++i)
+	{
+		// std::cout << tree.vector[i] << " ";
+		if (i != tree.vector.size() - 1)
+			if (tree.vector[i] > tree.vector[i+1])
+			{
+				std::cout << "error!" << std::endl;
+				break ;	
+			}
+	}
+	// std::cout << std::endl;
+
 	// tree.check_traversal();
 	// std::sort(tree.vector.begin(), tree.vector.end());
-	// for (int i = 0; i < tree.vector.size(); ++i)
-	// {
-	// 	std::cout << tree.vector[i] << " ";
-	// 	if (i != tree.vector.size() - 1)
-	// 		if (tree.vector[i] > tree.vector[i+1])
-	// 		{
-	// 			std::cout << "error!" << std::endl;
-	// 			break ;	
-	// 		}
-	// }
-	// std::cout << std::endl;
+
 
 	// for (std::vector<int>::iterator iter = tree.vector.begin(); iter != tree.vector.end(); iter++)
 	// 	std::cout << *iter << " ";
 	// std::cout << std::endl;
 }
+
+// 0 0 2 3 4 4 5 6 7 8 8 10 10 11 13 14 16 17 18 18 19 20 20 21 23 23 24 26 27 28 28 29 29 29 30 32 32 33 34 34 34 35 36 38 39 43 44 44 49 50 51 52 53 53 53 57 58 58 58 59 60 61 62 62 64 64 64 64 64 65 65 69 70 71 75 75 76 77 77 78 80 80 81 82 83 84 85 86 87 87 88 88 89 90 93 94 95 95 96 97
