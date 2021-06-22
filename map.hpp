@@ -24,9 +24,9 @@ namespace ft
 			{
 				protected:
 					Compare comp;
-					value_compare (Compare c) : comp(c) {}
 				
 				public:
+					value_compare (Compare c) : comp(c) {}
 					typedef bool	result_type;
 					typedef value_type	first_argument_type;
 					typedef value_type	second_argument_type;
@@ -48,251 +48,99 @@ namespace ft
 			typedef typename iterator_traits<iterator>::difference_type difference_type;
 			typedef size_t size_type;
 
+			typedef typename Alloc::template rebind< RBTree<value_type, value_compare, allocator_type> >::other AlTree;
+			typedef typename RBTree<value_type, value_compare, allocator_type>::TreeNode TreeNode;
 
 		private:
-			value_compare _comp;
+			key_compare _comp;
 			allocator_type _alloc;
 			size_type _size;
-			RBTree<value_type, value_compare, allocator_type> _tree;
+			RBTree<value_type, value_compare, allocator_type>* _tree;
 
 		public:
-			explicit map (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(value_compare(comp)), _alloc(alloc), _size(0), _tree(_comp) {}
-
-			template <class InputIterator>
-			map (InputIterator first, InputIterator last, const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(comp), _alloc(alloc), _size(0) {}
-
-			map (const map& x) : _comp(comp), _alloc(alloc), _size(0) {}
-
-			virtual ~map();
-
-			map& operator= (const map& x);
-
-			iterator begin();
-
-			const_iterator begin() const;
-
-			iterator end();
-
-			const_iterator end() const;
-
-			reverse_iterator rbegin();
-
-			const_reverse_iterator rbegin() const;
-
-			reverse_iterator rend();
-
-			const_reverse_iterator rend() const;
-
-			bool empty() const;
-
-			size_type size() const;
-
-			size_type max_size() const;
-
-			mapped_type& operator[] (const key_type& k);
-
-			pair<iterator,bool> insert (const value_type& val)
+			explicit map (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(comp), _alloc(alloc), _size(0)
 			{
-				iterator iter(this->_tree.find(val));
-				if (_comp(val))
-			}
-
-			iterator insert (iterator position, const value_type& val);
-
-			template <class InputIterator>
-			void insert (InputIterator first, InputIterator last);
-
-			void erase (iterator position);
-
-			size_type erase (const key_type& k);
-
-			void erase (iterator first, iterator last);
-
-			void swap (map& x);
-
-			void clear();
-
-			key_compare key_comp() const;
-
-			value_compare value_comp() const;
-
-			iterator find (const key_type& k)
-			{
-				return (iterator(find.))
-			}
-
-			const_iterator find (const key_type& k) const;
-
-			size_type count (const key_type& k) const;
-
-			iterator lower_bound (const key_type& k);
-
-			const_iterator lower_bound (const key_type& k) const;
-
-			iterator upper_bound (const key_type& k);
-
-			const_iterator upper_bound (const key_type& k) const;
-
-			pair<const_iterator,const_iterator> equal_range (const key_type& k) const;
-
-			pair<iterator,iterator>             equal_range (const key_type& k);
-
-allocator_type get_allocator() const;
-
-	};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	template < class T, class Alloc = std::allocator<T> >
-	class vector
-	{
-		public:
-			typedef T value_type;
-			typedef Alloc allocator_type;
-			typedef value_type& reference;
-			typedef const value_type& const_reference;
-			typedef value_type* pointer;
-			typedef const value_type* const_pointer;
-			typedef ft::VectorIterator<T, false> iterator;
-			typedef ft::VectorIterator<T, true> const_iterator;
-			typedef ft::reverse_iterator<iterator> reverse_iterator;
-			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
-			typedef typename iterator_traits<iterator>::difference_type difference_type;
-			typedef size_t size_type;
-
-		private:
-			T* _arr;
-			size_t _size;
-			size_t _capacity;
-			Alloc _alloc;
-
-			void expandCapacity()
-			{
-				if (this->_capacity == 0)
-				{
-					this->_arr = this->_alloc.allocate(1);
-					this->_capacity = 1;
-				}
-				else
-				{
-					this->_capacity *= 2;
-					T *temp = this->_alloc.allocate(this->_capacity);
-					for (size_type i = 0; i < this->_size; i++)
-					{
-						this->_alloc.construct(temp + i, *(this->_arr + i) );
-						this->_alloc.destroy(this->_arr + i);
-					}
-					this->_alloc.deallocate(this->_arr, this->_capacity / 2);
-					this->_arr = temp;
-				}
-			}
-
-			void shift_elem_back(size_type pos, size_type len)
-			{
-				size_type chunk_size = this->_size - pos;
-				for (size_type i = 0; i < chunk_size; ++i)
-					this->_arr[pos + len + chunk_size - i - 1] = this->_arr[pos + chunk_size - i - 1];
-			}
-
-			void shift_elem_front(size_type pos, size_type len)
-			{
-				for (size_type i = 0; i < this->_size - pos - len; ++i)
-					this->_arr[pos + i] = this->_arr[pos + i + len];
-			}
-
-		public:
-			explicit vector(const allocator_type& alloc = allocator_type()) : _arr(NULL), _size(0), _capacity(0), _alloc(alloc) {}
-
-			explicit vector (size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type()) : _arr(NULL), _size(0), _capacity(0), _alloc(alloc)
-			{
-				assign(n, val);
+				AlTree _treeAlloc;
+				this->_tree = _treeAlloc.allocate(1);
+				_treeAlloc.construct(this->_tree, RBTree<value_type, value_compare, allocator_type>(value_compare(this->_comp), false));
 			}
 
 			template <class InputIterator>
-			vector (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type()) : _arr(NULL), _size(0), _capacity(0), _alloc(alloc)
+			map (InputIterator first, InputIterator last, const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(comp), _alloc(alloc), _size(0)
 			{
-				assign(first, last);
+				AlTree _treeAlloc;
+				this->_tree = _treeAlloc.allocate(1);
+				_treeAlloc.construct(this->_tree, RBTree<value_type, value_compare, allocator_type>(value_compare(this->_comp), false));
+				this->insert(first, last);
 			}
 
-			vector (const vector& x) : _arr(NULL), _size(0), _capacity(0), _alloc(x._alloc)
+			map (const map& x) : _comp(x._comp), _alloc(x._alloc), _size(x._size)
 			{
-				this->reserve(x._size);
-				for (const_iterator iter = x.begin(); iter != x.end(); iter++)
-					this->push_back(*iter);
+				AlTree _treeAlloc;
+				this->_tree = _treeAlloc.allocate(1);
+				_treeAlloc.construct(this->_tree, *(x._tree));
 			}
 
-			virtual ~vector()
+			virtual ~map()
 			{
-				if (this->_capacity > 0)
-				{
-					this->clear();
-					this->_alloc.deallocate(this->_arr, this->_capacity);
-				}
+				AlTree _treeAlloc;
+				_treeAlloc.destroy(this->_tree);
+				_treeAlloc.deallocate(this->_tree, 1);
 			}
 
-			vector& operator= (const vector& x)
+			map& operator= (const map& x)
 			{
 				if (this != &x)
 				{
-					this->reserve(x._size);
-					assign(x.begin(), x.end());
+					*(this->_tree) = *(x._tree);
+					this->_size = x._size;
 				}
 				return (*this);
 			}
 
 			iterator begin()
 			{
-				return (iterator(this->_arr));
+				return (iterator(this->_tree->getMinNode(this->_tree->_root), this->_tree));
 			}
 
 			const_iterator begin() const
 			{
-				return (const_iterator(this->_arr));
+				return (const_iterator(this->_tree->getMinNode(this->_tree->_root), this->_tree));
 			}
 
 			iterator end()
 			{
-				return (iterator(this->_arr + this->_size));
+				return (iterator(this->_tree->_leaf, this->_tree));
 			}
 
 			const_iterator end() const
 			{
-				return (const_iterator(this->_arr + this->_size));
+				return (const_iterator(this->_tree->_leaf, this->_tree));
 			}
 
 			reverse_iterator rbegin()
 			{
-				return (reverse_iterator(this->_arr + this->_size));
+				return (reverse_iterator(iterator(this->_tree->getMaxNode(this->_tree->_root), this->_tree)));
 			}
 
 			const_reverse_iterator rbegin() const
 			{
-				return (const_reverse_iterator(this->_arr + this->_size));
+				return (const_reverse_iterator(const_iterator(this->_tree->getMaxNode(this->_tree->_root), this->_tree)));
 			}
 
 			reverse_iterator rend()
 			{
-				return (reverse_iterator(this->_arr));
+				return (reverse_iterator(iterator(this->_tree->_leaf, this->_tree)));
 			}
 
 			const_reverse_iterator rend() const
 			{
-				return (const_reverse_iterator(this->_arr));
+				return (const_reverse_iterator(const_iterator(this->_tree->_leaf, this->_tree)));
+			}
+
+			bool empty() const
+			{
+				return (this->_size == 0);
 			}
 
 			size_type size() const
@@ -302,231 +150,140 @@ allocator_type get_allocator() const;
 
 			size_type max_size() const
 			{
-				return (this->_alloc.max_size());
+				return (this->_tree->_nodeAlloc.max_size());
 			}
 
-			void resize (size_type n, value_type val = value_type())
+			mapped_type& operator[] (const key_type& k)
 			{
-				if (n <= this->_size)
+				return ( (*((this->insert(ft::make_pair(k, mapped_type()))).first)).second );
+			}
+
+			pair<iterator,bool> insert (const value_type& val)
+			{
+				pair<TreeNode*, bool> result = this->_tree->insert(val);
+				
+				if (result.second == true)
 				{
-					size_type size = this->_size - n;
-					for (size_type i = 0; i < size; i++)
-						this->pop_back();
+					++this->_size;
+					return (pair<iterator,bool>(iterator(result.first), true));
 				}
 				else
-				{
-					if (n > this->_capacity && n < this->_capacity * 2)
-						this->expandCapacity();
-					else
-						this->reserve(n);
-					for (size_type i = this->_size; i < n; ++i)
-						this->_alloc.construct(this->_arr + i, val);
-					this->_size = n;
-				}
-			}
-
-			size_type capacity() const
-			{
-				return (this->_capacity);
-			}
-
-			bool empty() const
-			{
-				return (this->_size == 0);
-			}
-
-			void reserve (size_type n)
-			{
-				if (this->_capacity >= n)
-					return ;
-				if (this->max_size() < n)
-					throw std::length_error("Error: ft::vector: Length is too long");
-				if (this->_arr == NULL)
-					this->_arr = this->_alloc.allocate(n);
-				else
-				{
-					T* temp = this->_alloc.allocate(n);
-					for (size_type i = 0; i < this->_size; i++)
-					{
-						this->_alloc.construct(temp + i, *(this->_arr + i));
-						this->_alloc.destroy(this->_arr + i);
-					}
-					this->_alloc.deallocate(this->_arr, this->_capacity);
-					this->_arr = temp;
-				}
-				this->_capacity = n;
-			}
-
-			reference operator[] (size_type n)
-			{
-				return (this->_arr[n]);
-			}
-
-			const_reference operator[] (size_type n) const
-			{
-				return (this->_arr[n]);
-			}
-
-			reference at (size_type n)
-			{
-				if (this->_size <= n)
-					throw std::out_of_range("Error: ft::vector: Index out of range");
-				return (this->_arr[n]);
-			}
-
-			const_reference at (size_type n) const
-			{
-				if (this->_size <= n)
-					throw std::out_of_range("Error: ft::vector: Index out of range");
-				return (this->_arr[n]);
-			}
-
-			reference front()
-			{
-				return (this->_arr[0]);
-			}
-
-			const_reference front() const
-			{
-				return (this->_arr[0]);
-			}
-
-			reference back()
-			{
-				return (this->_arr[this->_size - 1]);
-			}
-
-			const_reference back() const
-			{
-				return (this->_arr[this->_size - 1]);
-			}
-
-			template <class InputIterator>
-			void assign (InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type* = NULL)
-			{
-				this->clear();
-
-				size_type n = 0;
-				for (InputIterator iter = first; iter != last; ++iter)
-					++n;
-				this->reserve(n);
-				for (InputIterator iter = first; iter != last; ++iter)
-					this->push_back(*iter);
-			}
-
-			void assign (size_type n, const value_type& val)
-			{
-				this->clear();
-				this->reserve(n);
-				for (size_type i = 0; i < n; i++)
-					this->push_back(val);
-			}
-
-			void push_back (const value_type& val)
-			{
-				if (this->_capacity <= this->_size)
-					this->expandCapacity();
-				this->_alloc.construct(this->_arr + this->_size, val);
-				++this->_size;
-			}
-
-			void pop_back()
-			{
-				this->_alloc.destroy(this->_arr + (--this->_size));
+					return (pair<iterator,bool>(iterator(result.first), false));
 			}
 
 			iterator insert (iterator position, const value_type& val)
 			{
-				size_type pos = position._ptr - this->_arr;
-				if (this->_size == this->_capacity)
-					this->expandCapacity();
-				if (this->_size != 0)
-					this->shift_elem_back(pos, 1);
-				this->_size += 1;
-				this->_alloc.construct(this->_arr + pos, val);
-				return (iterator(this->_arr + pos));
-			}
-
-			void insert (iterator position, size_type n, const value_type& val)
-			{
-				size_type pos = position._ptr - this->_arr;
-				if (this->_capacity < this->_size + n)
-				{
-					if (this->_size + n > this->_capacity && this->_size + n < this->_capacity * 2)
-						this->expandCapacity();
-					else
-						this->reserve(this->_size + n);
-				}
-				this->shift_elem_back(pos, n);
-				this->_size += n;
-				for (size_type i = 0; i < n; ++i)
-					this->_alloc.construct(this->_arr + pos + i, val);
+				(void)position;
+				return (this->insert(val).first);
 			}
 
 			template <class InputIterator>
-			void insert (iterator position, InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type* = NULL)
+			void insert (InputIterator first, InputIterator last)
 			{
-				size_type pos = position._ptr - this->_arr;
-				size_type n = 0;
-				for (InputIterator temp = first; temp != last; ++temp)
-					++n;
-				if (this->_capacity < this->_size + n)
+				while (first != last)
 				{
-					if (this->_size + n > this->_capacity && this->_size + n < this->_capacity * 2)
-						this->expandCapacity();
-					else
-						this->reserve(this->_size + n);
+					this->insert(*first);
+					++first;
 				}
-				this->shift_elem_back(pos, n);
-				this->_size += n;
-				for (size_type i = 0; i < n; ++i)
+				// this->_tree->printInorder(this->_tree->_root);
+				// this->_tree->show_tree(this->_tree->_root, "", true);
+			}
+
+			void erase (iterator position)
+			{
+				// this->_tree->show_tree(this->_tree->_root, "", true);
+				if (this->_tree->erase(*position) != 0)
+					--this->_size;
+			}
+
+			size_type erase (const key_type& k)
+			{
+				// this->_tree->show_tree(this->_tree->_root, "", true);
+				int erase_size = this->_tree->erase(value_type(k, mapped_type()));
+				this->_size -= erase_size;
+				return (erase_size);
+			}
+
+			void erase (iterator first, iterator last)
+			{
+				// this->_tree->show_tree(this->_tree->_root, "", true);
+				while (first != last)
 				{
-					this->_alloc.construct(this->_arr + pos + i, *first);
-					first++;
+					this->erase(first);
+					++first;
 				}
 			}
 
-			iterator erase (iterator position)
+			void swap (map& x)
 			{
-				size_type pos = position._ptr - this->_arr;
-				this->_alloc.destroy(this->_arr + pos);
-				this->shift_elem_front(pos, 1);
-				this->_size -= 1;
-				return (position);
-			}
-
-			iterator erase (iterator first, iterator last)
-			{
-				size_type pos = first._ptr - this->_arr;
-				size_type n = last - first;
-				for (size_type i = 0; i < n; ++i)
-					this->_alloc.destroy(this->_arr + pos + i);
-				this->shift_elem_front(pos, n);
-				this->_size -= n;
-				return (first);
-			}
-
-			void swap (vector& x)
-			{
-				vector<T> temp(*this);
-				pointer temp_arr = this->_arr;
-				
-				this->_arr = x._arr;
-				this->_size = x._size;
-				this->_capacity = x._capacity;
-				this->_alloc = x._alloc;
-
-				x._arr = temp_arr;
-				x._size = temp._size;
-				x._capacity = temp._capacity;
-				x._alloc = temp._alloc;
+				char buf[sizeof(map)];
+				memcpy(buf, reinterpret_cast<void *>(&x), sizeof(map));
+				memcpy(reinterpret_cast<char *>(&x), reinterpret_cast<void *>(this), sizeof(map));
+				memcpy(reinterpret_cast<char *>(this), reinterpret_cast<void *>(buf), sizeof(map));
 			}
 
 			void clear()
 			{
-				for (size_type i = 0; i < this->_size; ++i)
-					this->_alloc.destroy(this->_arr + i);
+				// this->_tree->show_tree(this->_tree->_root, "", true);
+				this->_tree->clearTree(this->_tree->_root);
 				this->_size = 0;
+			}
+
+			key_compare key_comp() const
+			{
+				return (this->_comp);
+			}
+
+			value_compare value_comp() const
+			{
+				return (value_compare(this->_comp));
+			}
+
+			iterator find (const key_type& k)
+			{
+				return (iterator(this->_tree->find(value_type(k, mapped_type() )), this->_tree) );
+			}
+
+			const_iterator find (const key_type& k) const
+			{
+				return (const_iterator(this->_tree->find(value_type(k, mapped_type() )), this->_tree) );
+			}
+
+			size_type count (const key_type& k) const
+			{
+				if (this->find(k) == this->end())
+					return (0);
+				return (1);
+			}
+
+			iterator lower_bound (const key_type& k)
+			{
+				return (iterator(this->_tree->lowerBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf)));
+			}
+
+			const_iterator lower_bound (const key_type& k) const
+			{
+				return (const_iterator(this->_tree->lowerBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf)));
+			}
+
+			iterator upper_bound (const key_type& k)
+			{
+				return (iterator(this->_tree->upperBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf)));
+			}
+
+			const_iterator upper_bound (const key_type& k) const
+			{
+				return (const_iterator(this->_tree->upperBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf)));
+			}
+
+			pair<const_iterator,const_iterator> equal_range (const key_type& k) const
+			{
+				return pair<const_iterator, const_iterator>(this->lower_bound(k), this->upper_bound(k));
+			}
+
+			pair<iterator,iterator>             equal_range (const key_type& k)
+			{
+				return pair<iterator, iterator>(this->lower_bound(k), this->upper_bound(k));
 			}
 
 			allocator_type get_allocator() const
@@ -536,49 +293,50 @@ allocator_type get_allocator() const;
 
 	};
 
-	template <class T, class Alloc>
-	bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+	template< class Key, class T, class Compare, class Alloc >
+	bool operator==( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
 	{
 		if (lhs.size() != rhs.size())
 			return (false);
 		return (ft::equal(lhs.begin(), lhs.end(), rhs.begin()));
 	}
 	
-	template <class T, class Alloc>
-	bool operator!= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+	template< class Key, class T, class Compare, class Alloc >
+	bool operator!=( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
 	{
-		return (!(lhs == rhs));	
+		return (!(lhs == rhs));
 	}
-	
-	template <class T, class Alloc>
-	bool operator<  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+
+	template< class Key, class T, class Compare, class Alloc >
+	bool operator<( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
 	{
 		return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
 	}
-	
-	template <class T, class Alloc>
-	bool operator<= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+
+	template< class Key, class T, class Compare, class Alloc >
+	bool operator<=( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
 	{
 		return ((lhs == rhs) || (lhs < rhs));
 	}
-	
-	template <class T, class Alloc>
-	bool operator>  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+
+	template< class Key, class T, class Compare, class Alloc >
+	bool operator>( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
 	{
 		return (!(lhs <= rhs));
 	}
-	
-	template <class T, class Alloc>
-	bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+
+	template< class Key, class T, class Compare, class Alloc >
+	bool operator>=( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
 	{
 		return ((lhs == rhs) || (lhs > rhs));
 	}
 
-	template <class T, class Alloc>
-	void swap (vector<T,Alloc>& x, vector<T,Alloc>& y)
+	template< class Key, class T, class Compare, class Alloc >
+	void swap( map<Key,T,Compare,Alloc>& lhs, map<Key,T,Compare,Alloc>& rhs )
 	{
-		x.swap(y);
+		lhs.swap(rhs);
 	}
+
 
 }
 #endif

@@ -8,6 +8,9 @@
 
 namespace ft
 {
+	template <class T, class Compare, bool IsConst>
+	class RBTreeIterator;
+
 	template <class T, class Compare, class Alloc = std::allocator<T> >
 	class RBTree
 	{
@@ -26,16 +29,16 @@ namespace ft
 				bool _color;
 
 				TreeNode() : _parent(NULL), _left(NULL), _right(NULL), _color(RED) {}
+				TreeNode(T value) : _value(value), _parent(NULL), _left(NULL), _right(NULL), _color(RED) {}
 			};
 
 			typedef typename Alloc::template rebind<TreeNode>::other Alnod;
 
 		private:
 			value_compare _comp;
-			Alnod _nodeAlloc;
 			const bool _isMulti;
 
-			TreeNode* grandParent(TreeNode* node)
+			TreeNode* grandParent(TreeNode* node) const
 			{
 				if ((node != NULL) && (node->_parent != NULL))
 					return (node->_parent->_parent);
@@ -43,7 +46,7 @@ namespace ft
 					return (NULL);
 			}
 
-			TreeNode* uncle(TreeNode* node)
+			TreeNode* uncle(TreeNode* node) const
 			{
 				TreeNode* grandParent = this->grandParent(node);
 				if (grandParent == NULL)
@@ -104,10 +107,17 @@ namespace ft
 
 			void _swapNode(TreeNode* a, TreeNode* b)
 			{
-				// 두 노드의 부모의 자식 포인터 변경
-				TreeNode temp_a = *a;
-				TreeNode temp_b = *b;
+				TreeNode* aParent = a->_parent;
+				TreeNode* aLeft = a->_left;
+				TreeNode* aRight = a->_right;
+				bool aColor = a->_color;
 
+				TreeNode* bParent = b->_parent;
+				TreeNode* bLeft = b->_left;
+				TreeNode* bRight = b->_right;
+				bool bColor = b->_color;
+
+				// 두 노드의 부모의 자식 포인터 변경
 				if (a->_parent != NULL)
 				{
 					if (this->_isNodeParentLeft(a))
@@ -128,24 +138,33 @@ namespace ft
 					this->_root = a;
 
 				// 두 노드 자식들의 부모 포인터 변경
-				if (temp_a._left != this->_leaf)
-					temp_a._left->_parent = b;
-				if (temp_a._right != this->_leaf)
-					temp_a._right->_parent = b;
-				if (temp_b._left != this->_leaf)
-					temp_b._left->_parent = a;
-				if (temp_b._right != this->_leaf)
-					temp_b._right->_parent = a;
+				if (aLeft != this->_leaf)
+					aLeft->_parent = b;
+				if (aRight != this->_leaf)
+					aRight->_parent = b;
 
-				char buf[sizeof(TreeNode)];
-				memcpy(buf, a, sizeof(TreeNode));
-				memcpy(a, b, sizeof(TreeNode)); // 포인터 뿐만 아니라 color도 바꿔주어야 RB 속성 유지 가능
-				memcpy(b, buf, sizeof(TreeNode)); // 값만 바꾸는 흉내를 낸다고 생각하면 편함
-				a->_value = temp_a._value;
-				b->_value = temp_b._value;
+				if (bLeft != this->_leaf)
+					bLeft->_parent = a;
+				if (bRight != this->_leaf)
+					bRight->_parent = a;
+
+				// char buf[sizeof(TreeNode)];
+				// memcpy(buf, a, sizeof(TreeNode));
+				// memcpy(a, b, sizeof(TreeNode)); // 포인터 뿐만 아니라 color도 바꿔주어야 RB 속성 유지 가능
+				// memcpy(b, buf, sizeof(TreeNode)); // 값만 바꾸는 흉내를 낸다고 생각하면 편함
+
+				a->_parent = bParent;
+				a->_left = bLeft;
+				a->_right = bRight;
+				a->_color = bColor;
+
+				b->_parent = aParent;
+				b->_left = aLeft;
+				b->_right = aRight;
+				b->_color = aColor;
 			}
 
-			TreeNode* sibling(TreeNode* node)
+			TreeNode* sibling(TreeNode* node) const
 			{
 				if (node == node->_parent->_left)
 					return node->_parent->_right;
@@ -153,7 +172,7 @@ namespace ft
 					return node->_parent->_left;
 			}
 
-			bool _isNodeParentLeft(TreeNode* node)
+			bool _isNodeParentLeft(const TreeNode* node) const
 			{
 				if (node->_parent->_left == node)
 					return (true);
@@ -161,41 +180,12 @@ namespace ft
 					return (false);
 			}
 
-			TreeNode* _getMaxNode(TreeNode* root) // 반복문
-			{
-				TreeNode* curr = root;
-				if (root == this->_leaf)
-					return (NULL);
-				while (1)
-				{
-					if (curr->_right == this->_leaf)
-						return (curr);
-					curr = curr->_right;
-				}
-				return (NULL);
-			}
-
-			TreeNode* _getMinNode(TreeNode* root) // 반복문
-			{
-				TreeNode* curr = root;
-				if (root == this->_leaf)
-					return (NULL);
-				while (1)
-				{
-					if (curr->_left == this->_leaf)
-						return (curr);
-					curr = curr->_left;
-				}
-				return (NULL);
-			}
-
-
-
 		public:
 			TreeNode* _root;
 			TreeNode* _leaf;
+			Alnod _nodeAlloc;
 
-			RBTree(const value_compare& comp, bool isMulti = false) : _comp(comp), _isMulti(isMulti);
+			RBTree(const value_compare& comp, bool isMulti = false) : _comp(comp), _isMulti(isMulti)
 			{
 				this->_leaf = this->_nodeAlloc.allocate(1);
 				this->_nodeAlloc.construct(this->_leaf, TreeNode());
@@ -203,17 +193,75 @@ namespace ft
 				this->_root = this->_leaf;
 			}
 
+			RBTree(const RBTree& x) : _comp(x._comp), _isMulti(x._isMulti), _nodeAlloc(x._nodeAlloc)
+			{
+				this->_leaf = this->_nodeAlloc.allocate(1);
+				this->_nodeAlloc.construct(this->_leaf, TreeNode());
+				this->_leaf->_color = BLACK;
+				this->_root = this->_leaf;
+
+				this->copyTree(x, x._root);
+			}
+
+			~RBTree()
+			{
+				this->clearTree(this->_root);
+				this->_nodeAlloc.destroy(this->_leaf);
+				this->_nodeAlloc.deallocate(this->_leaf, 1);
+			}
+			
+			RBTree& operator=(const RBTree& x)
+			{
+				if (this != &x)
+				{
+					this->clearTree(this->_root);
+					this->copyTree(x, x._root);
+				}
+				return (*this);
+			}
+
+			void copyTree(const RBTree& x, TreeNode* node)
+			{
+				if (node == x._leaf)
+					return ;
+				this->insert(node->_value);
+				this->copyTree(x, node->_left);
+				this->copyTree(x, node->_right);
+			}
+
+			void clearTree(TreeNode* node)
+			{
+				if (node == this->_leaf)
+					return ;
+				this->clearTree(node->_left);
+				this->clearTree(node->_right);
+
+
+				if (node->_parent != NULL)
+				{
+					if (this->_isNodeParentLeft(node)) // 지우려는 노드가 부모의 왼쪽인지 오른쪽인지 파악하여 link 끊어준다
+						node->_parent->_left = this->_leaf;
+					else
+						node->_parent->_right = this->_leaf;
+				}
+				else // 루트노드 삭제 시 비어있는 트리
+					this->_root = this->_leaf;
+				this->_nodeAlloc.destroy(node);
+				this->_nodeAlloc.deallocate(node, 1);
+
+			}
+
 			TreeNode* find(const value_type& value) const
 			{
 				TreeNode* curr = this->_root;
 
 				if (this->_root == this->_leaf) // isEmpty
-					return (NULL);
+					return (this->_leaf);
 
 				while (1)
 				{
 					if (curr == this->_leaf) // leaf이면 못찾음
-						return (NULL);
+						return (this->_leaf);
 
 					if (!_comp(value, curr->_value) && !_comp(curr->_value, value)) // 서로 작지 않을 경우에는 같다
 					{
@@ -225,26 +273,11 @@ namespace ft
 						curr = curr->_right;
 				}
 				return (NULL);
-
-				// return (this->_find(this->_root, value));
 			}
 
-			// TreeNode* find(TreeNode* node, const value_type& value) const
-			// {
-				
-			// }
 
-
-			TreeNode* insert(const value_type& value)
+			pair<TreeNode*, bool> insert(const value_type& value)
 			{
-				TreeNode* newNode = this->_nodeAlloc.allocate(1);
-				this->_nodeAlloc.construct(newNode, TreeNode());
-				newNode->_value = value;
-				newNode->_color = RED; // 삽입하는 노드는 항상 적색이다
-				newNode->_left = this->_leaf;
-				newNode->_right = this->_leaf;
-
-
 				TreeNode* curr = this->_root;
 				TreeNode* parent = NULL;
 
@@ -256,9 +289,21 @@ namespace ft
 					if (_comp(value, curr->_value))
 						curr = curr->_left;
 					else
+					{
+						if (!_comp(value, curr->_value) && !_comp(curr->_value, value)) // 같을 때
+						{
+							if (!this->_isMulti) // 멀티 트리가 아니라면
+								return (pair<TreeNode*, bool>(curr, false)); // insert하지 않고 현재 노드(같은 값) 리턴
+						}
 						curr = curr->_right;
+					}
 				}
 
+				TreeNode* newNode = this->_nodeAlloc.allocate(1);
+				this->_nodeAlloc.construct(newNode, TreeNode(value));
+				newNode->_color = RED; // 삽입하는 노드는 항상 적색이다
+				newNode->_left = this->_leaf;
+				newNode->_right = this->_leaf;
 				newNode->_parent = parent;
 
 				if (parent == NULL) // 비어있는 트리에 삽입한 경우 루트 변경
@@ -269,102 +314,171 @@ namespace ft
 					parent->_right = newNode; // 작은 경우 외(같거나 큰 경우)에는 모두 오른쪽 자식
 
 				this->_insertFixUp(newNode);
-				return (newNode);
+				return (pair<TreeNode*, bool>(newNode, true));
 			}
 
-			void erase(const value_type& value)
+			int erase(const value_type& value)
 			{
 				TreeNode* toDelete;
+				int cnt = 0;
 				while (1)
 				{
 					toDelete = this->find(value);
-					if (toDelete == NULL)
-						return ;
+					if (toDelete == this->_leaf)
+						break ;
 
 					// std::cout << key << std::endl;
 					// this->show_tree(this->_root, "", true);
 					this->_deleteNode(toDelete);
+					++cnt;
 				}
+				return (cnt);
 			}
 
-			TreeNode* getNextNode(TreeNode* node) const
+			TreeNode* getMaxNode(TreeNode* root) const
+			{
+				TreeNode* curr = root;
+				if (root == this->_leaf)
+					return (this->_leaf);
+				while (1)
+				{
+					if (curr->_right == this->_leaf)
+						return (curr);
+					curr = curr->_right;
+				}
+				return (NULL);
+			}
+
+			TreeNode* getMinNode(TreeNode* root) const
+			{
+				TreeNode* curr = root;
+				if (root == this->_leaf)
+					return (this->_leaf);
+				while (1)
+				{
+					if (curr->_left == this->_leaf)
+						return (curr);
+					curr = curr->_left;
+				}
+				return (NULL);
+			}
+
+			TreeNode* getNextNode(const TreeNode* node) const
 			{
 				if (node == this->_leaf)
-					return (this->_getMinNode(this->_root));
+					return (this->getMinNode(this->_root));
 				if (node->_right != this->_leaf)
-					return (this->_getMinNode(node->_right));
+					return (this->getMinNode(node->_right));
 
-				TreeNode* curr = node;
+				const TreeNode* curr = node;
 				while (1)
 				{
 					if (curr->_parent == NULL)
 						return (this->_leaf);
 					if (this->_isNodeParentLeft(curr))
-						return (node->_parent);
+						return (curr->_parent);
 					else
 						curr = curr->_parent;
 				}
 				return (NULL);
 			}
 
-			TreeNode* getPrevNode(TreeNode* node) const
+			TreeNode* getPrevNode(const TreeNode* node) const
 			{
 				if (node == this->_leaf)
-					return (this->_getMaxNode(this->_root));
+					return (this->getMaxNode(this->_root));
 				if (node->_left != this->_leaf)
-					return (this->_getMaxNode(node->_left));
+					return (this->getMaxNode(node->_left));
 				
-				TreeNode* curr = node;
+				const TreeNode* curr = node;
 				while (1)
 				{
 					if (curr->_parent == NULL)
 						return (this->_leaf);
 					if (!this->_isNodeParentLeft(curr))
-						return (node->_parent);
+						return (curr->_parent);
 					else
 						curr = curr->_parent;
 				}
 			}
 
-	
+			TreeNode* lowerBound(TreeNode* begin, const value_type& value, TreeNode* end)
+			{
+				if (!_comp(begin->_value, value) && !_comp(value, begin->_value)) // 찾는 값과 같으면
+					return (begin);
+				if (_comp(begin->_value, value))
+				{
+					if (begin->_right == end) // 범위의 끝 값보다 클 경우 end return
+						return (end);
+					return (this->lowerBound(begin->_right, value, end));
+				}
+				else
+				{
+					if (begin->_left == end) // 범위의 첫 값보다 작을 경우 begin return
+						return (begin);
+					return (this->lowerBound(begin->_left, value, end));
+				}
+			}
+
+			TreeNode* upperBound(TreeNode* begin, const value_type& value, TreeNode* end)
+			{
+				if (_comp(begin->_value, value) || (!_comp(begin->_value, value) && !_comp(value, begin->_value))) // 찾는 값이 더 클 경우
+				{
+					if (begin->_right == end)
+						return (end);
+					else
+						return (this->upperBound(begin->_right, value, end));
+						
+				}
+				else // 찾는 값이 작을 경우
+				{
+					if (begin->_left == end)
+						return (begin);
+					else
+						return (this->upperBound(begin->_left, value, end));
+				}
+			}
 
 
 	
+
+
 	
-			// /*show tree*/
-			// void show_tree(TreeNode* root, std::string indent, bool last)
-			// {
-			// // print the tree structure on the screen
-			// if (root != this->_leaf)
-			// {
-			// std::cout << indent;
-			// if (last)
-			// {
-			// std::cout << "R----";
-			// indent += "     ";
-			// }
-			// else
-			// {
-			// std::cout << "L----";
-			// indent += "|    ";
-			// }
+	
+			/*show tree*/
+			void show_tree(TreeNode* root, std::string indent, bool last)
+			{
+			// print the tree structure on the screen
+			if (root != this->_leaf)
+			{
+			std::cout << indent;
+			if (last)
+			{
+			std::cout << "R----";
+			indent += "     ";
+			}
+			else
+			{
+			std::cout << "L----";
+			indent += "|    ";
+			}
 
-			// std::string sColor = (root->_color == RED) ? "RED" : "BLACK";
-			// std::cout << root->_key << "(" << sColor << ")" << std::endl;
-			// show_tree(root->_left, indent, false);
-			// show_tree(root->_right, indent, true);
-			// }
-			// }
+			std::string sColor = (root->_color == RED) ? "RED" : "BLACK";
+			std::cout << root->_value.first << "(" << sColor << ")" << std::endl;
+			show_tree(root->_left, indent, false);
+			show_tree(root->_right, indent, true);
+			}
+			}
 
-			// void printInorder(TreeNode* root)
-			// {
-			// if (root == this->_leaf)
-			// return ;
-			// this->printInorder(root->_left);
-			// this->vector.push_back(root->_key);
-			// std::cout << root->_key << " ";
-			// this->printInorder(root->_right);
-			// }
+			void printInorder(TreeNode* root)
+			{
+				if (root == this->_leaf)
+					return ;
+				this->printInorder(root->_left);
+				std::cout << root->_value.first << std::endl;
+				std::cout << root->_value.second << std::endl;
+				this->printInorder(root->_right);
+			}
 
 			// void check_traversal()
 			// {
@@ -512,14 +626,14 @@ namespace ft
 				// 왼쪽 서브트리만 가지는 경우
 				else if (toDelete->_left != this->_leaf && toDelete->_right == this->_leaf)
 				{
-					TreeNode *switch_child = this->_getMaxNode(toDelete->_left); // 왼쪽 서브트리의 최댓값 찾기
+					TreeNode *switch_child = this->getMaxNode(toDelete->_left); // 왼쪽 서브트리의 최댓값 찾기
 					this->_swapNode(toDelete, switch_child);
 					this->_deleteNode(toDelete);
 				}
 				// 오른쪽 서브트리만 가지는 경우
 				else if (toDelete->_left == this->_leaf && toDelete->_right != this->_leaf)
 				{
-					TreeNode *switch_child = this->_getMinNode(toDelete->_right); // 왼쪽 서브트리의 최댓값 찾기
+					TreeNode *switch_child = this->getMinNode(toDelete->_right); // 왼쪽 서브트리의 최댓값 찾기
 					this->_swapNode(toDelete, switch_child);
 					this->_deleteNode(toDelete);
 				}
@@ -529,9 +643,9 @@ namespace ft
 				{
 					TreeNode *switch_child;
 					if (toDelete->_left != this->_leaf) // 바꿔줄 최소 or 최대 노드 선택
-						switch_child = this->_getMaxNode(toDelete->_left);
+						switch_child = this->getMaxNode(toDelete->_left);
 					else
-						switch_child = this->_getMinNode(toDelete->_right);
+						switch_child = this->getMinNode(toDelete->_right);
 
 					this->_swapNode(toDelete, switch_child); // 선택된 단말 노드와 위치 바꿈
 					this->_deleteNode(toDelete);
@@ -651,7 +765,6 @@ namespace ft
 	{
 		private:
 			typedef typename choose<IsConst, const typename RBTree<T, Compare>::TreeNode *, typename RBTree<T, Compare>::TreeNode * >::type Node;
-			const RBTree<T, Compare>* _rbtree;
 
 		public:
 			typedef T value_type;
@@ -660,12 +773,13 @@ namespace ft
 			typedef typename choose<IsConst, const T &, T &>::type reference;
 			typedef typename choose<IsConst, const T *, T *>::type pointer;	
 			
+			const RBTree<T, Compare>* _rbtree;
 			Node _ptr;
 
 			// commmon
-			RBTreeIterator(Node ptr = NULL, RBTree<T, Compare>* rbtree = NULL) : _ptr(ptr), _rbtree(rbtree) {}
+			RBTreeIterator(Node ptr = NULL, RBTree<T, Compare>* rbtree = NULL) : _rbtree(rbtree), _ptr(ptr) {}
 
-			RBTreeIterator(const RBTreeIterator<T, Compare, false>& ref) : _ptr(ref._ptr), _rbtree(ref._rbtree) {}
+			RBTreeIterator(const RBTreeIterator<T, Compare, false>& ref) : _rbtree(ref._rbtree), _ptr(ref._ptr) {}
 			
 			RBTreeIterator& operator=(const RBTreeIterator& ref)
 			{
