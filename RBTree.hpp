@@ -458,6 +458,9 @@ namespace ft
 			TreeNode* lowerBound(TreeNode* begin, const value_type& value, TreeNode* end)
 			{
 				TreeNode* curr = begin;
+
+				if (_comp(this->getMaxNode(this->_root)->_value, value))
+					return (end);
 				while (1)
 				{
 					if (curr == end)
@@ -467,7 +470,7 @@ namespace ft
 					else if (_comp(curr->_value, value))
 					{
 						if (curr->_right == end)
-							return (end);
+							return (this->getNextNode(curr));
 						curr = curr->_right;
 					}
 					else
@@ -482,20 +485,16 @@ namespace ft
 			TreeNode* upperBound(TreeNode* begin, const value_type& value, TreeNode* end)
 			{
 				TreeNode* curr = begin;
+				if (!_comp(value, this->getMaxNode(this->_root)->_value))
+					return (end);
 				while (1)
 				{
 					if (curr == end)
 						return (end);
-					if (!_comp(curr->_value, value) && !_comp(value, curr->_value)) // 같으면
+					else if (!_comp(value, curr->_value))
 					{
 						if (curr->_right == end)
 							return (this->getNextNode(curr));
-						curr = curr->_right;
-					}
-					else if (_comp(curr->_value, value))
-					{
-						if (curr->_right == end)
-							return (end);
 						curr = curr->_right;
 					}
 					else
