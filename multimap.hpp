@@ -1,5 +1,5 @@
-#ifndef MAP_HPP
-# define MAP_HPP
+#ifndef MULTIMAP_HPP
+# define MULTIMAP_HPP
 
 # include <iostream>
 # include "utils.hpp"
@@ -8,12 +8,12 @@
 
 namespace ft
 {
-	template <	class Key,                                     // map::key_type
-				class T,                                       // map::mapped_type
-				class Compare = ft::less<Key>,                     // map::key_compare
-				class Alloc = std::allocator<ft::pair<const Key, T> >    // map::allocator_type
+	template < class Key,                                     // multimap::key_type
+				class T,                                       // multimap::mapped_type
+				class Compare = ft::less<Key>,                     // multimap::key_compare
+				class Alloc = std::allocator<ft::pair<const Key,T> >    // multimap::allocator_type
 				>
-	class map
+	class multimap
 	{
 		public:
 			typedef Key key_type;
@@ -58,37 +58,37 @@ namespace ft
 			RBTree<value_type, value_compare, allocator_type>* _tree;
 
 		public:
-			explicit map (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(comp), _alloc(alloc), _size(0)
+			explicit multimap (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(comp), _alloc(alloc), _size(0)
 			{
 				AlTree _treeAlloc;
 				this->_tree = _treeAlloc.allocate(1);
-				_treeAlloc.construct(this->_tree, RBTree<value_type, value_compare, allocator_type>(value_compare(this->_comp), false));
+				_treeAlloc.construct(this->_tree, RBTree<value_type, value_compare, allocator_type>(value_compare(this->_comp), true));
 			}
 
 			template <class InputIterator>
-			map (InputIterator first, InputIterator last, const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(comp), _alloc(alloc), _size(0)
+			multimap (InputIterator first, InputIterator last, const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(comp), _alloc(alloc), _size(0)
 			{
 				AlTree _treeAlloc;
 				this->_tree = _treeAlloc.allocate(1);
-				_treeAlloc.construct(this->_tree, RBTree<value_type, value_compare, allocator_type>(value_compare(this->_comp), false));
+				_treeAlloc.construct(this->_tree, RBTree<value_type, value_compare, allocator_type>(value_compare(this->_comp), true));
 				this->insert(first, last);
 			}
 
-			map (const map& x) : _comp(x._comp), _alloc(x._alloc), _size(x._size)
+			multimap (const multimap& x) : _comp(x._comp), _alloc(x._alloc), _size(x._size)
 			{
 				AlTree _treeAlloc;
 				this->_tree = _treeAlloc.allocate(1);
 				_treeAlloc.construct(this->_tree, *(x._tree));
 			}
 
-			virtual ~map()
+			virtual ~multimap()
 			{
 				AlTree _treeAlloc;
 				_treeAlloc.destroy(this->_tree);
 				_treeAlloc.deallocate(this->_tree, 1);
 			}
-
-			map& operator= (const map& x)
+			
+			multimap& operator= (const multimap& x)
 			{
 				if (this != &x)
 				{
@@ -153,28 +153,17 @@ namespace ft
 				return (this->_tree->_nodeAlloc.max_size());
 			}
 
-			mapped_type& operator[] (const key_type& k)
-			{
-				return ( (*((this->insert(ft::make_pair(k, mapped_type()))).first)).second );
-			}
-
-			pair<iterator,bool> insert (const value_type& val)
+			iterator insert (const value_type& val)
 			{
 				pair<TreeNode*, bool> result = this->_tree->insert(val);
-				
-				if (result.second == true)
-				{
-					++this->_size;
-					return (pair<iterator,bool>(iterator(result.first), true));
-				}
-				else
-					return (pair<iterator,bool>(iterator(result.first), false));
+				++this->_size;
+				return (iterator(result.first));
 			}
 
 			iterator insert (iterator position, const value_type& val)
 			{
 				(void)position;
-				return (this->insert(val).first);
+				return (this->insert(val));
 			}
 
 			template <class InputIterator>
@@ -210,12 +199,12 @@ namespace ft
 				}
 			}
 
-			void swap (map& x)
+			void swap (multimap& x)
 			{
-				char buf[sizeof(map)];
-				memcpy(buf, reinterpret_cast<void *>(&x), sizeof(map));
-				memcpy(reinterpret_cast<char *>(&x), reinterpret_cast<void *>(this), sizeof(map));
-				memcpy(reinterpret_cast<char *>(this), reinterpret_cast<void *>(buf), sizeof(map));
+				char buf[sizeof(multimap)];
+				memcpy(buf, reinterpret_cast<void *>(&x), sizeof(multimap));
+				memcpy(reinterpret_cast<char *>(&x), reinterpret_cast<void *>(this), sizeof(multimap));
+				memcpy(reinterpret_cast<char *>(this), reinterpret_cast<void *>(buf), sizeof(multimap));
 			}
 
 			void clear()
@@ -246,9 +235,15 @@ namespace ft
 
 			size_type count (const key_type& k) const
 			{
-				if (this->find(k) == this->end())
-					return (0);
-				return (1);
+				const_iterator iter = this->find(k);
+				const_iterator iter_end = this->end();
+				size_type size = 0;
+				while (iter != iter_end && iter->first == k)
+				{
+					++size;
+					++iter;
+				}
+				return (size);
 			}
 
 			iterator lower_bound (const key_type& k)
@@ -285,53 +280,52 @@ namespace ft
 			{
 				return (this->_alloc);
 			}
-
 	};
 
-	template< class Key, class T, class Compare, class Alloc >
-	bool operator==( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
+
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator== ( const multimap<Key,T,Compare,Alloc>& lhs, const multimap<Key,T,Compare,Alloc>& rhs )
 	{
 		if (lhs.size() != rhs.size())
 			return (false);
 		return (ft::equal(lhs.begin(), lhs.end(), rhs.begin()));
 	}
-	
-	template< class Key, class T, class Compare, class Alloc >
-	bool operator!=( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
+
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator!= ( const multimap<Key,T,Compare,Alloc>& lhs, const multimap<Key,T,Compare,Alloc>& rhs )
 	{
 		return (!(lhs == rhs));
 	}
 
-	template< class Key, class T, class Compare, class Alloc >
-	bool operator<( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator<  ( const multimap<Key,T,Compare,Alloc>& lhs, const multimap<Key,T,Compare,Alloc>& rhs )
 	{
 		return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
 	}
 
-	template< class Key, class T, class Compare, class Alloc >
-	bool operator<=( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator<= ( const multimap<Key,T,Compare,Alloc>& lhs, const multimap<Key,T,Compare,Alloc>& rhs )
 	{
 		return ((lhs == rhs) || (lhs < rhs));
 	}
 
-	template< class Key, class T, class Compare, class Alloc >
-	bool operator>( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator>  ( const multimap<Key,T,Compare,Alloc>& lhs, const multimap<Key,T,Compare,Alloc>& rhs )
 	{
 		return (!(lhs <= rhs));
 	}
 
-	template< class Key, class T, class Compare, class Alloc >
-	bool operator>=( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator>= ( const multimap<Key,T,Compare,Alloc>& lhs, const multimap<Key,T,Compare,Alloc>& rhs )
 	{
 		return ((lhs == rhs) || (lhs > rhs));
 	}
 
-	template< class Key, class T, class Compare, class Alloc >
-	void swap( map<Key,T,Compare,Alloc>& lhs, map<Key,T,Compare,Alloc>& rhs )
+	template <class Key, class T, class Compare, class Alloc>
+	void swap (multimap<Key,T,Compare,Alloc>& x, multimap<Key,T,Compare,Alloc>& y)
 	{
 		lhs.swap(rhs);
 	}
-
-
 }
+
 #endif

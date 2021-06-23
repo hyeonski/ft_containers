@@ -380,12 +380,16 @@ namespace ft
 					if (toDelete == this->_leaf)
 						break ;
 
-					// std::cout << key << std::endl;
-					// this->show_tree(this->_root, "", true);
 					this->_deleteNode(toDelete);
 					++cnt;
 				}
 				return (cnt);
+			}
+
+			int erase(TreeNode* toDelete)
+			{
+				this->_deleteNode(toDelete);
+				return (1);
 			}
 
 			TreeNode* getMaxNode(TreeNode* root) const
