@@ -47,10 +47,15 @@ int main()
 	// 	std::cout << iter->second << std::endl << std::endl;
 	// }
 
-	std::map<int, int> map1;
-	std::map<int, int> map2;
+	std::map<int, int> map;
 
-	std::cout << (map1 == map2) << std::endl;
+	map[1] = 1;
+	map[3] = 2;
+	map[5] = 3;
+	map[7] = 4;
+	map[9] = 5;
+
+	std::cout << map.upper_bound(0)->first << std::endl;
 
 	// for (ft::map<int, int>::reverse_iterator iter = map.rbegin(); iter != map.rend(); ++iter)
 	// {
