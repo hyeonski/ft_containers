@@ -107,61 +107,114 @@ namespace ft
 
 			void _swapNode(TreeNode* a, TreeNode* b)
 			{
-				TreeNode* aParent = a->_parent;
-				TreeNode* aLeft = a->_left;
-				TreeNode* aRight = a->_right;
-				bool aColor = a->_color;
-
-				TreeNode* bParent = b->_parent;
-				TreeNode* bLeft = b->_left;
-				TreeNode* bRight = b->_right;
-				bool bColor = b->_color;
-
-				// 두 노드의 부모의 자식 포인터 변경
-				if (a->_parent != NULL)
+				if (a->_parent != NULL && a->_parent == b)
+					this->_swapParentChild(b, a);
+				else if (b->_parent != NULL && b->_parent == a)
+					this->_swapParentChild(a, b);
+				else
 				{
-					if (this->_isNodeParentLeft(a))
-						a->_parent->_left = b;
+					TreeNode* aParent = a->_parent;
+					TreeNode* aLeft = a->_left;
+					TreeNode* aRight = a->_right;
+					bool aColor = a->_color;
+
+					TreeNode* bParent = b->_parent;
+					TreeNode* bLeft = b->_left;
+					TreeNode* bRight = b->_right;
+					bool bColor = b->_color;
+
+					// 두 노드의 부모의 자식 포인터 변경
+					if (a->_parent != NULL)
+					{
+						if (this->_isNodeParentLeft(a))
+							a->_parent->_left = b;
+						else
+							a->_parent->_right = b;
+					}
 					else
-						a->_parent->_right = b;
+						this->_root = b;
+					if (b->_parent != NULL)
+					{
+						if (this->_isNodeParentLeft(b))
+							b->_parent->_left = a;
+						else
+							b->_parent->_right = a;
+					}
+					else
+						this->_root = a;
+
+					// 두 노드 자식들의 부모 포인터 변경
+					if (aLeft != this->_leaf)
+						aLeft->_parent = b;
+					if (aRight != this->_leaf)
+						aRight->_parent = b;
+
+					if (bLeft != this->_leaf)
+						bLeft->_parent = a;
+					if (bRight != this->_leaf)
+						bRight->_parent = a;
+
+					a->_parent = bParent;
+					a->_left = bLeft;
+					a->_right = bRight;
+					a->_color = bColor;
+
+					b->_parent = aParent;
+					b->_left = aLeft;
+					b->_right = aRight;
+					b->_color = aColor;
+				}
+			}
+
+			void _swapParentChild(TreeNode* parent, TreeNode* child)
+			{
+				TreeNode* pParent = parent->_parent;
+				TreeNode* pLeft = parent->_left;
+				TreeNode* pRight = parent->_right;
+				bool pColor = parent->_color;
+
+				TreeNode* cLeft = child->_left;
+				TreeNode* cRight = child->_right;
+				bool cColor = child->_color;
+
+				if (parent->_parent != NULL)
+				{
+					if (this->_isNodeParentLeft(parent))
+						pParent->_left = child;
+					else
+						pParent->_right = child;
 				}
 				else
-					this->_root = b;
-				if (b->_parent != NULL)
+					this->_root = child;
+				
+				if (cLeft != this->_leaf)
+					cLeft->_parent = parent;
+				if (cRight != this->_leaf)
+					cRight->_parent = parent;
+
+				parent->_parent = child;
+				parent->_color = cColor;
+				child->_color = pColor;
+				if (child == parent->_left)
 				{
-					if (this->_isNodeParentLeft(b))
-						b->_parent->_left = a;
-					else
-						b->_parent->_right = a;
+					parent->_left = cLeft;
+					parent->_right = cRight;
+					child->_parent = pParent;
+
+					pRight->_parent = child;
+					child->_left = parent;
+					child->_right = pRight;
 				}
 				else
-					this->_root = a;
+				{
+					parent->_left = cLeft;
+					parent->_right = cRight;
+					child->_parent = pParent;
 
-				// 두 노드 자식들의 부모 포인터 변경
-				if (aLeft != this->_leaf)
-					aLeft->_parent = b;
-				if (aRight != this->_leaf)
-					aRight->_parent = b;
-
-				if (bLeft != this->_leaf)
-					bLeft->_parent = a;
-				if (bRight != this->_leaf)
-					bRight->_parent = a;
-
-				// char buf[sizeof(TreeNode)];
-				// memcpy(buf, a, sizeof(TreeNode));
-				// memcpy(a, b, sizeof(TreeNode)); // 포인터 뿐만 아니라 color도 바꿔주어야 RB 속성 유지 가능
-				// memcpy(b, buf, sizeof(TreeNode)); // 값만 바꾸는 흉내를 낸다고 생각하면 편함
-
-				a->_parent = bParent;
-				a->_left = bLeft;
-				a->_right = bRight;
-				a->_color = bColor;
-
-				b->_parent = aParent;
-				b->_left = aLeft;
-				b->_right = aRight;
-				b->_color = aColor;
+					pLeft->_parent = child;
+					child->_left = pLeft;
+					child->_right = parent;
+				}
 			}
 
 			TreeNode* sibling(TreeNode* node) const
@@ -404,38 +457,53 @@ namespace ft
 
 			TreeNode* lowerBound(TreeNode* begin, const value_type& value, TreeNode* end)
 			{
-				if (!_comp(begin->_value, value) && !_comp(value, begin->_value)) // 찾는 값과 같으면
-					return (begin);
-				if (_comp(begin->_value, value))
+				TreeNode* curr = begin;
+				while (1)
 				{
-					if (begin->_right == end) // 범위의 끝 값보다 클 경우 end return
+					if (curr == end)
 						return (end);
-					return (this->lowerBound(begin->_right, value, end));
-				}
-				else
-				{
-					if (begin->_left == end) // 범위의 첫 값보다 작을 경우 begin return
-						return (begin);
-					return (this->lowerBound(begin->_left, value, end));
+					if (!_comp(curr->_value, value) && !_comp(value, curr->_value)) // 같으면
+						return (curr);
+					else if (_comp(curr->_value, value))
+					{
+						if (curr->_right == end)
+							return (end);
+						curr = curr->_right;
+					}
+					else
+					{
+						if (curr->_left == end)
+							return (curr);
+						curr = curr->_left;
+					}
 				}
 			}
 
 			TreeNode* upperBound(TreeNode* begin, const value_type& value, TreeNode* end)
 			{
-				if (_comp(begin->_value, value) || (!_comp(begin->_value, value) && !_comp(value, begin->_value))) // 찾는 값이 더 클 경우
+				TreeNode* curr = begin;
+				while (1)
 				{
-					if (begin->_right == end)
+					if (curr == end)
 						return (end);
+					if (!_comp(curr->_value, value) && !_comp(value, curr->_value)) // 같으면
+					{
+						if (curr->_right == end)
+							return (this->getNextNode(curr));
+						curr = curr->_right;
+					}
+					else if (_comp(curr->_value, value))
+					{
+						if (curr->_right == end)
+							return (end);
+						curr = curr->_right;
+					}
 					else
-						return (this->upperBound(begin->_right, value, end));
-						
-				}
-				else // 찾는 값이 작을 경우
-				{
-					if (begin->_left == end)
-						return (begin);
-					else
-						return (this->upperBound(begin->_left, value, end));
+					{
+						if (curr->_left == end)
+							return (curr);
+						curr = curr->_left;
+					}
 				}
 			}
 

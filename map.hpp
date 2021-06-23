@@ -120,22 +120,22 @@ namespace ft
 
 			reverse_iterator rbegin()
 			{
-				return (reverse_iterator(iterator(this->_tree->getMaxNode(this->_tree->_root), this->_tree)));
+				return (reverse_iterator(iterator(this->_tree->_leaf, this->_tree)));
 			}
 
 			const_reverse_iterator rbegin() const
 			{
-				return (const_reverse_iterator(const_iterator(this->_tree->getMaxNode(this->_tree->_root), this->_tree)));
+				return (const_reverse_iterator(const_iterator(this->_tree->_leaf, this->_tree)));
 			}
 
 			reverse_iterator rend()
 			{
-				return (reverse_iterator(iterator(this->_tree->_leaf, this->_tree)));
+				return (reverse_iterator(iterator(this->_tree->getMinNode(this->_tree->_root), this->_tree)));
 			}
 
 			const_reverse_iterator rend() const
 			{
-				return (const_reverse_iterator(const_iterator(this->_tree->_leaf, this->_tree)));
+				return (const_reverse_iterator(const_iterator(this->_tree->getMinNode(this->_tree->_root), this->_tree)));
 			}
 
 			bool empty() const
@@ -185,20 +185,16 @@ namespace ft
 					this->insert(*first);
 					++first;
 				}
-				// this->_tree->printInorder(this->_tree->_root);
-				// this->_tree->show_tree(this->_tree->_root, "", true);
 			}
 
 			void erase (iterator position)
 			{
-				// this->_tree->show_tree(this->_tree->_root, "", true);
 				if (this->_tree->erase(*position) != 0)
 					--this->_size;
 			}
 
 			size_type erase (const key_type& k)
 			{
-				// this->_tree->show_tree(this->_tree->_root, "", true);
 				int erase_size = this->_tree->erase(value_type(k, mapped_type()));
 				this->_size -= erase_size;
 				return (erase_size);
@@ -206,11 +202,11 @@ namespace ft
 
 			void erase (iterator first, iterator last)
 			{
-				// this->_tree->show_tree(this->_tree->_root, "", true);
-				while (first != last)
+				iterator next;
+				for (iterator it = first; it != last;)
 				{
-					this->erase(first);
-					++first;
+					next = it++;
+					this->erase(next);
 				}
 			}
 
