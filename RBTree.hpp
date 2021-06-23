@@ -455,7 +455,7 @@ namespace ft
 				}
 			}
 
-			TreeNode* lowerBound(TreeNode* begin, const value_type& value, TreeNode* end)
+			TreeNode* lowerBound(TreeNode* begin, const value_type& value, TreeNode* end) const
 			{
 				TreeNode* curr = begin;
 
@@ -482,7 +482,7 @@ namespace ft
 				}
 			}
 
-			TreeNode* upperBound(TreeNode* begin, const value_type& value, TreeNode* end)
+			TreeNode* upperBound(TreeNode* begin, const value_type& value, TreeNode* end) const
 			{
 				TreeNode* curr = begin;
 				if (!_comp(value, this->getMaxNode(this->_root)->_value))
@@ -506,14 +506,8 @@ namespace ft
 				}
 			}
 
-
-	
-
-
-	
-	
 			/*show tree*/
-			void show_tree(TreeNode* root, std::string indent, bool last)
+			void show_tree(TreeNode* root, std::string indent, bool last) const
 			{
 			// print the tree structure on the screen
 			if (root != this->_leaf)
@@ -537,7 +531,7 @@ namespace ft
 			}
 			}
 
-			void printInorder(TreeNode* root)
+			void printInorder(TreeNode* root) const
 			{
 				if (root == this->_leaf)
 					return ;
