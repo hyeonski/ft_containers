@@ -15,42 +15,51 @@ namespace ft
 
 		private:
 			container_type c;
-			stack(const stack<T>& origin){ (void)origin; }
-			stack<T>& operator=(const stack<T> &origin){ (void)origin; }
 
 		public:
 			explicit stack (const container_type& ctnr = container_type()) : c(ctnr) {}
 
-			~stack() {}
+			stack(const stack& x) : c(x.c) {}
+
+			virtual ~stack() {}
+
+			stack& operator=(const stack& x)
+			{
+				if (this != &x)
+				{
+					this->c = x.c;
+				}
+				return (*this);
+			}
 
 			bool empty() const
 			{
-				return (c.empty());
+				return (this->c.empty());
 			}
 
 			size_type size() const
 			{
-				return (c.size());
+				return (this->c.size());
 			}
 
 			value_type& top()
 			{
-				return (c.back());
+				return (this->c.back());
 			}
 
 			const value_type& top() const
 			{
-				return (c.back());
+				return (this->c.back());
 			}
 
 			void push (const value_type& val)
 			{
-				c.push_back(val);
+				this->c.push_back(val);
 			}
 
 			void pop()
 			{
-				c.pop_back();
+				this->c.pop_back();
 			}
 
 			template <class U, class C>
@@ -81,7 +90,7 @@ namespace ft
 	template <class T, class Container>
 	bool operator!= (const stack<T,Container>& lhs, const stack<T,Container>& rhs)
 	{
-		return (!(lhs == rhs));
+		return (lhs.c != rhs.c);
 	}
 
 	template <class T, class Container>
@@ -93,19 +102,19 @@ namespace ft
 	template <class T, class Container>
 	bool operator<= (const stack<T,Container>& lhs, const stack<T,Container>& rhs)
 	{
-		return (lhs < rhs || lhs == rhs);
+		return (lhs.c <= rhs.c);
 	}
 
 	template <class T, class Container>
 	bool operator>  (const stack<T,Container>& lhs, const stack<T,Container>& rhs)
 	{
-		return (!(lhs <= rhs));
+		return (lhs.c > rhs.c);
 	}
 
 	template <class T, class Container>
 	bool operator>= (const stack<T,Container>& lhs, const stack<T,Container>& rhs)
 	{
-		return (!(lhs < rhs));
+		return (lhs.c >= rhs.c);
 	}
 }
 
