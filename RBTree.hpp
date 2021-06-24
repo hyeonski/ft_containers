@@ -28,7 +28,7 @@ namespace ft
 				TreeNode* _right;
 				bool _color;
 
-				TreeNode() : _parent(NULL), _left(NULL), _right(NULL), _color(RED) {}
+				TreeNode() : _value(T()), _parent(NULL), _left(NULL), _right(NULL), _color(RED) {}
 				TreeNode(T value) : _value(value), _parent(NULL), _left(NULL), _right(NULL), _color(RED) {}
 			};
 

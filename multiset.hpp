@@ -17,47 +17,49 @@ namespace ft
 		public:
 			typedef T key_type;
 			typedef T value_type;
+			typedef const value_type const_value_type;
 			typedef Compare key_compare;
 			typedef Compare value_compare;
 			typedef Alloc allocator_type;
+			typedef typename Alloc::template rebind< const_value_type >::other const_allocator_type;
 			typedef typename allocator_type::reference reference;
 			typedef typename allocator_type::const_reference const_reference;
 			typedef typename allocator_type::pointer pointer;
 			typedef typename allocator_type::const_pointer const_pointer;
-			typedef typename RBTree<value_type, value_compare, allocator_type>::iterator iterator;
-			typedef typename RBTree<value_type, value_compare, allocator_type>::const_iterator const_iterator;
+			typedef typename RBTree<const_value_type, value_compare, const_allocator_type>::const_iterator iterator;
+			typedef typename RBTree<const_value_type, value_compare, const_allocator_type>::const_iterator const_iterator;
 			typedef ft::reverse_iterator<iterator> reverse_iterator;
 			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 			typedef typename iterator_traits<iterator>::difference_type difference_type;
 			typedef size_t size_type;
 
-			typedef typename Alloc::template rebind< RBTree<value_type, value_compare, allocator_type> >::other AlTree;
-			typedef typename RBTree<value_type, value_compare, allocator_type>::TreeNode TreeNode;
+			typedef typename Alloc::template rebind< RBTree<const_value_type, value_compare, const_allocator_type> >::other AlTree;
+			typedef typename RBTree<const_value_type, value_compare, const_allocator_type>::TreeNode TreeNode;
 
 		private:
 			key_compare _comp;
 			allocator_type _alloc;
 			size_type _size;
-			RBTree<value_type, value_compare, allocator_type>* _tree;
+			RBTree<const_value_type, value_compare, const_allocator_type>* _tree;
 		
 		public:
 			explicit multiset (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(comp), _alloc(alloc), _size(0)
 			{
 				AlTree _treeAlloc;
 				this->_tree = _treeAlloc.allocate(1);
-				_treeAlloc.construct(this->_tree, RBTree<value_type, value_compare, allocator_type>(value_compare(this->_comp), true));
+				_treeAlloc.construct(this->_tree, RBTree<const_value_type, value_compare, const_allocator_type>(value_compare(this->_comp), true));
 			}
 
 			template <class InputIterator>
-			multiset (InputIterator first, InputIterator last, const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type())
+			multiset (InputIterator first, InputIterator last, const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()) : _comp(comp), _alloc(alloc), _size(0)
 			{
 				AlTree _treeAlloc;
 				this->_tree = _treeAlloc.allocate(1);
-				_treeAlloc.construct(this->_tree, RBTree<value_type, value_compare, allocator_type>(value_compare(this->_comp), true));
+				_treeAlloc.construct(this->_tree, RBTree<const_value_type, value_compare, const_allocator_type>(value_compare(this->_comp), true));
 				this->insert(first, last);
 			}
 
-			multiset (const multiset& x)
+			multiset (const multiset& x) : _comp(x._comp), _alloc(x._alloc), _size(x._size)
 			{
 				AlTree _treeAlloc;
 				this->_tree = _treeAlloc.allocate(1);
@@ -161,13 +163,13 @@ namespace ft
 
 			void erase (iterator position)
 			{
-				this->_tree->erase(position._ptr);
+				this->_tree->erase(const_cast<TreeNode*>(position._ptr));
 				--this->_size;
 			}
 
 			size_type erase (const value_type& val)
 			{
-				int erase_size = this->_tree->erase(value_type(k, mapped_type()));
+				int erase_size = this->_tree->erase(val);
 				this->_size -= erase_size;
 				return (erase_size);
 			}
@@ -218,10 +220,10 @@ namespace ft
 
 			size_type count (const value_type& val) const
 			{
-				const_iterator iter = this->find(k);
+				const_iterator iter = this->find(val);
 				const_iterator iter_end = this->end();
 				size_type size = 0;
-				while (iter != iter_end && iter->first == k)
+				while (iter != iter_end && *iter == val)
 				{
 					++size;
 					++iter;
@@ -249,12 +251,12 @@ namespace ft
 
 			pair<iterator,iterator> equal_range (const value_type& val)
 			{
-				return pair<const_iterator, const_iterator>(this->lower_bound(k), this->upper_bound(k));
+				return pair<iterator, iterator>(this->lower_bound(val), this->upper_bound(val));
 			}
 
 			pair<const_iterator,const_iterator> equal_range (const value_type& val) const
 			{
-				return pair<iterator, iterator>(this->lower_bound(k), this->upper_bound(k));
+				return pair<const_iterator, const_iterator>(this->lower_bound(val), this->upper_bound(val));
 			}
 
 			allocator_type get_allocator() const
@@ -304,7 +306,7 @@ namespace ft
 	template <class T, class Compare, class Alloc>
 	void swap (multiset<T,Compare,Alloc>& x, multiset<T,Compare,Alloc>& y)
 	{
-		lhs.swap(rhs);
+		x.swap(y);
 	}
 
 }

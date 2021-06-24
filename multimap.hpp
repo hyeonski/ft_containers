@@ -324,7 +324,7 @@ namespace ft
 	template <class Key, class T, class Compare, class Alloc>
 	void swap (multimap<Key,T,Compare,Alloc>& x, multimap<Key,T,Compare,Alloc>& y)
 	{
-		lhs.swap(rhs);
+		x.swap(y);
 	}
 }
 

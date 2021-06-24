@@ -5,6 +5,7 @@
 # include "utils.hpp"
 # include "iterator.hpp"
 # include "DequeIterator.hpp"
+# include "vector.hpp"
 
 namespace ft
 {
@@ -25,7 +26,12 @@ namespace ft
 			typedef typename iterator_traits<iterator>::difference_type difference_type;
 			typedef size_t size_type;
 		private:
+			typedef typename Alloc::template rebind< value_type* >::other Alarr;
+
 			allocator_type _alloc;
+			value_type** _arr;
+			size_type _size;
+			const size_type _blockSize = 256;
 
 		public:
 			explicit deque (const allocator_type& alloc = allocator_type());
@@ -112,6 +118,24 @@ namespace ft
 			allocator_type get_allocator() const;
 
 
+
+		private:
+			template<class T, class Alloc = std::allocator<T> >
+			class DequeBlock
+			{
+				private:
+					const size_type _blockSize
+				public:
+					typedef T value_type;
+					typedef Alloc allocator_type;
+					typedef typename allocator_type::reference reference;
+					typedef typename allocator_type::const_reference const_reference;
+					typedef typename allocator_type::pointer pointer;
+					typedef typename allocator_type::const_pointer const_pointer;
+					typedef size_t size_type;
+
+					value_type* _arr;
+			};
 	};
 
 
@@ -135,6 +159,8 @@ namespace ft
 
 	template <class T, class Alloc>
 	void swap (deque<T,Alloc>& x, deque<T,Alloc>& y);
+
+
 
 }
 
