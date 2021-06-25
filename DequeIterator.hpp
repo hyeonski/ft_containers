@@ -292,6 +292,11 @@ namespace ft
 				return (this->_size);
 			}
 
+			size_type startIndex()
+			{
+				return (this->_startIdx);
+			}
+
 			void clear()
 			{
 				for (size_type i = this->_startIdx; i < this->_startIdx + this->_size; ++i)
@@ -303,7 +308,15 @@ namespace ft
 			void push_back(const value_type& val)
 			{
 				if (this->_startIdx + this->_size >= this->_capacity)
-					this->_reserveBack(this->_capacity * 2);
+				{
+					if (this->_size == this->_capacity)
+						this->_reserveBack(this->_capacity * 2);
+					else
+					{
+						--this->_startIdx;
+						this->_shift_elem_front(this->_startIdx, 1);
+					}
+				}
 				this->_alloc.construct(this->_arr + this->_startIdx + this->_size, val);
 				++this->_size;
 			}
@@ -311,7 +324,15 @@ namespace ft
 			void push_front(const value_type& val)
 			{
 				if (this->_startIdx == 0)
-					this->_reserveFront(this->_capacity * 2);
+				{
+					if (this->_size == this->_capacity)
+						this->_reserveFront(this->_capacity * 2);
+					else
+					{
+						this->_shift_elem_back(0, 1);
+						++this->_startIdx;
+					}
+				}
 				this->_alloc.construct(this->_arr + this->_startIdx - 1, val);
 				--this->_startIdx;
 				++this->_size;
@@ -383,7 +404,15 @@ namespace ft
 			{
 				size_type pos = position._ptr - this->_arr; // startIdx가지 감안되어 계산된 인덱스
 				if (this->_startIdx + this->_size >= this->_capacity)
-					this->_reserveBack(this->_capacity * 2);
+				{
+					if (this->_size == this->_capacity)
+						this->_reserveBack(this->_capacity * 2);
+					else
+					{
+						--this->_startIdx;
+						this->_shift_elem_front(this->_startIdx, 1);
+					}
+				}
 				if (this->_size != 0)
 					this->_shift_elem_back(pos, 1);
 				++this->_size;

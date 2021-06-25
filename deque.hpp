@@ -129,13 +129,61 @@ namespace ft
 
 			void assign (size_type n, const value_type& val);
 
-			void push_back (const value_type& val);
+			void push_back (const value_type& val)
+			{
+				if (this->_arr.back()->size() == _blockSize)
+				{
+					block_type* newBlock = this->_blockAlloc.allocate(1);
+					this->_blockAlloc.construct(newBlock, block_type());
+					this->_arr.push_back(newBlock);
+				}
+				else
+					this->_arr.back()->push_back(val);
+				++this->_size;
+			}
 
-			void push_front (const value_type& val);
+			void push_front (const value_type& val)
+			{
+				if (this->_arr.front()->size() == _blockSize)
+				{
+					block_type* newBlock = this->_blockAlloc.allocate(1);
+					this->_blockAlloc.construct(newBlock, block_type());
+					this->_arr.push_front(newBlock);
+				}
+				else
+					this->_arr.front()->push_front(val);
+				++this->_size;
+			}
 
-			void pop_back();
+			void pop_back()
+			{
+				if (this->_arr.back()->size() == 1)
+				{
+					block_type* last = this->_arr.back();
+					last->pop_back();
+					this->_blockAlloc.destroy(last);
+					this->_blockAlloc.deallocate(last, 1);
+					this->_arr.pop_back();
+				}
+				else
+					this->_arr.back()->pop_back();
+				--this->_size;
+			}
 
-			void pop_front();
+			void pop_front()
+			{
+				if (this->_arr.front()->size() == 1)
+				{
+					block_type* first = this->_arr.front();
+					first->pop_front();
+					this->_blockAlloc.destroy(first);
+					this->_blockAlloc.deallocate(first, 1);
+					this->_arr.pop_front();
+				}
+				else
+					this->_arr.front()->pop_front();
+				--this->_size;
+			}
 
 			iterator insert (iterator position, const value_type& val);
 
@@ -152,7 +200,10 @@ namespace ft
 
 			void clear();
 
-			allocator_type get_allocator() const;
+			allocator_type get_allocator() const
+			{
+				return (this->_alloc);
+			}
 
 
 
