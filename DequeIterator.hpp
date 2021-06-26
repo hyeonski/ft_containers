@@ -15,8 +15,8 @@ namespace ft
 			typedef typename choose<IsConst, const T *, T *>::type pointer;	
 			typedef ft::random_access_iterator_tag iterator_category;
 
-			T* _ptr; // 고민해보자
-			// commmon
+			T* _ptr;
+
 			DequeBlockIterator(T* ptr = NULL) : _ptr(ptr) {}
 
 			DequeBlockIterator(const DequeBlockIterator<T, false>& ref) : _ptr(ref._ptr) {}
@@ -44,7 +44,6 @@ namespace ft
 				return (temp);
 			}
 
-			// input
 			bool operator==(const DequeBlockIterator<T, true>& iter) const
 			{
 				return (this->_ptr == iter._ptr);
@@ -75,11 +74,6 @@ namespace ft
 				return (&(*this->_ptr));
 			}
 
-			// output
-
-			// forward
-
-			// bidirectional
 			DequeBlockIterator& operator--()
 			{
 				--this->_ptr;
@@ -94,7 +88,6 @@ namespace ft
 				return (temp);
 			}
 
-			// random access
 			DequeBlockIterator operator+(int n) const
 			{
 				return (DequeBlockIterator(this->_ptr + n));
@@ -223,6 +216,12 @@ namespace ft
 				this->_capacity = _blockSize;
 			}
 
+			DequeBlock(size_type startIndex, const allocator_type& alloc = allocator_type()) : _arr(NULL), _size(0), _capacity(0), _alloc(alloc), _startIdx(startIndex)
+			{
+				this->_arr = this->_alloc.allocate(_blockSize);
+				this->_capacity = _blockSize;
+			}
+
 			DequeBlock(const DequeBlock& x) : _arr(NULL), _size(x._size), _capacity(x._capacity), _alloc(x._alloc), _startIdx(x._startIdx)
 			{
 				this->_arr = this->_alloc.allocate(x._capacity);
@@ -300,16 +299,16 @@ namespace ft
 			void clear()
 			{
 				for (size_type i = this->_startIdx; i < this->_startIdx + this->_size; ++i)
-					this->_alloc.destory(this->_arr + i);
+					this->_alloc.destroy(this->_arr + i);
 				this->_size = 0;
 				this->_startIdx = this->_capacity / 2;
 			}
 
 			void push_back(const value_type& val)
 			{
-				if (this->_startIdx + this->_size >= this->_capacity)
+				if (this->_startIdx + this->_size == this->_capacity)
 				{
-					if (this->_size == this->_capacity)
+					if (this->_startIdx == 0)
 						this->_reserveBack(this->_capacity * 2);
 					else
 					{
@@ -340,13 +339,13 @@ namespace ft
 
 			void pop_back()
 			{
-				this->_alloc.destory(this->_arr + this->_startIdx + this->_size - 1);
+				this->_alloc.destroy(this->_arr + this->_startIdx + this->_size - 1);
 				--this->_size;
 			}
 
 			void pop_front()
 			{
-				this->_alloc.destory(this->_arr + this->_startIdx);
+				this->_alloc.destroy(this->_arr + this->_startIdx);
 				++this->_startIdx;
 				--this->_size;
 			}
@@ -369,14 +368,14 @@ namespace ft
 			reference at (size_type n)
 			{
 				if (this->_size <= n)
-					throw std::out_of_range("Error: ft::vector: Index out of range");
+					throw std::out_of_range("Error: ft::deque(block): Index out of range");
 				return (this->_arr[this->_startIdx + n]);
 			}
 
 			const_reference at (size_type n) const
 			{
 				if (this->_size <= n)
-					throw std::out_of_range("Error: ft::vector: Index out of range");
+					throw std::out_of_range("Error: ft::deque(block): Index out of range");
 				return (this->_arr[this->_startIdx + n]);
 			}
 
@@ -403,9 +402,9 @@ namespace ft
 			iterator insert (iterator position, const value_type& val)
 			{
 				size_type pos = position._ptr - this->_arr; // startIdx가지 감안되어 계산된 인덱스
-				if (this->_startIdx + this->_size >= this->_capacity)
+				if (this->_startIdx + this->_size == this->_capacity)
 				{
-					if (this->_size == this->_capacity)
+					if (this->_startIdx == 0)
 						this->_reserveBack(this->_capacity * 2);
 					else
 					{
@@ -425,6 +424,11 @@ namespace ft
 				size_type pos = position._ptr - this->_arr;
 				if (this->_capacity < this->_startIdx + this->_size + n)
 				{
+					if (this->_startIdx - n >= 0)
+					{
+						this->_startIdx -= n;
+						this->_shift_elem_front(this->_startIdx, n);
+					}
 					if (this->_startIdx + this->_size + n > this->_capacity && this->_startIdx + this->_size + n < this->_capacity * 2)
 						this->_reserveBack(this->_capacity * 2);
 					else
@@ -445,6 +449,11 @@ namespace ft
 					++n;
 				if (this->_capacity < this->_startIdx + this->_size + n)
 				{
+					if (this->_startIdx - n >= 0)
+					{
+						this->_startIdx -= n;
+						this->_shift_elem_front(this->_startIdx, n);
+					}
 					if (this->_startIdx + this->_size + n > this->_capacity && this->_startIdx + this->_size + n < this->_capacity * 2)
 						this->_reserveBack(this->_capacity * 2);
 					else
@@ -527,18 +536,6 @@ namespace ft
 
 	};
 
-	
-
-
-
-
-
-
-
-
-
-
-
 	template<typename T, bool IsConst>
 	class DequeIterator
 	{
@@ -549,16 +546,25 @@ namespace ft
 			typedef typename choose<IsConst, const T *, T *>::type pointer;	
 			typedef ft::random_access_iterator_tag iterator_category;
 
-			T* _ptr; // 고민해보자
-			// commmon
-			DequeIterator(T* ptr = NULL) : _ptr(ptr) {}
+			T* _ptr;
+		private:
+			difference_type _blockIdx;
+			difference_type _elemIdx;
 
-			DequeIterator(const DequeIterator<T, false>& ref) : _ptr(ref._ptr) {}
+			DequeIterator(T* ptr = NULL) : _ptr(ptr), _blockIdx(0), _elemIdx(0) {}
+
+			DequeIterator(difference_type blockIdx, difference_type elemIdx, T* ptr = NULL) : _ptr(ptr), _blockIdx(blockIdx), _elemIdx(elemIdx) {}
+
+			DequeIterator(const DequeIterator<T, false>& ref) : _ptr(ref._ptr), _blockIdx(ref._blockIdx), _elemIdx(ref._elemIdx) {}
 			
 			DequeIterator& operator=(const DequeIterator& ref)
 			{
 				if (this != &ref)
+				{
 					this->_ptr = ref._ptr;
+					this->_blockIdx = ref._blockIdx;
+					this->_elemIdx = ref._elemIdx;
+				}
 				return (*this);
 			}
 
@@ -578,7 +584,6 @@ namespace ft
 				return (temp);
 			}
 
-			// input
 			bool operator==(const DequeIterator<T, true>& iter) const
 			{
 				return (this->_ptr == iter._ptr);
@@ -609,11 +614,6 @@ namespace ft
 				return (&(*this->_ptr));
 			}
 
-			// output
-
-			// forward
-
-			// bidirectional
 			DequeIterator& operator--()
 			{
 				--this->_ptr;
@@ -628,7 +628,6 @@ namespace ft
 				return (temp);
 			}
 
-			// random access
 			DequeIterator operator+(int n) const
 			{
 				return (DequeIterator(this->_ptr + n));
@@ -722,11 +721,6 @@ namespace ft
 	{
 		return (DequeIterator<T, IsConst>(iter + n));
 	}
-
-	// typename reverse_iterator<Iterator>::difference_type operator- (const reverse_iterator<Iterator>& lhs, const reverse_iterator<Iterator>& rhs)
-	// {
-	// 	return (lhs._base - rhs._base);
-	// }
 }
 
 #endif

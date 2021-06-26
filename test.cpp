@@ -53,15 +53,17 @@ int main()
 
 	// std::cout << deque.end() - deque.begin() << std::endl;
 
-	deque.push_front(2);
-	deque.push_front(1);
-	deque.push_back(3);
-	deque.push_back(4);
-	deque.push_back(5);
+	for (int i = 0; i < 1000; i++)
+		deque.push_front(i);
+	for (int i = 0; i < 1000; ++i)
+		deque.pop_back();
+	for (int i = 0; i < 10; ++i)
+		deque.push_back(i);
+	for (int i = 0; i < 20; ++i)
+		deque.insert(deque.begin(), i);
+	for (int i = 0; i < 20; ++i)
+		deque.insert(deque.end(), i);
 
-	ft::DequeBlock<int>::iterator iter = deque.begin();
-	iter++;
-	iter++;
 
 	std::cout << "size: " << deque.size() << std::endl;
 	
@@ -72,5 +74,4 @@ int main()
 	std::cout << std::endl << deque.end() - deque.begin() << std::endl;
 
 
-	
 }
