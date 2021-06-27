@@ -93,16 +93,6 @@ namespace ft
 				return (DequeBlockIterator(this->_ptr + n));
 			}
 
-			difference_type operator+(const DequeBlockIterator<T, true> &iter) const
-			{
-				return (this->ptr + iter._ptr);
-			}
-
-			difference_type operator+(const DequeBlockIterator<T, false> &iter) const
-			{
-				return (this->ptr + iter._ptr);
-			}
-
 			DequeBlockIterator operator-(int n) const
 			{
 				return (DequeBlockIterator(this->_ptr - n));
@@ -542,19 +532,19 @@ namespace ft
 		public:
 			typedef T value_type;
 			typedef std::ptrdiff_t difference_type;
+			typedef std::ptrdiff_t difference_type;
 			typedef typename choose<IsConst, const T &, T &>::type reference;
 			typedef typename choose<IsConst, const T *, T *>::type pointer;	
 			typedef ft::random_access_iterator_tag iterator_category;
 		private:
 			typedef Alloc allocator_type;
 			typedef DequeBlock<value_type, allocator_type> block_type;
-		
+			static const difference_type _blockSize = 256;
+
 		public:
 			value_type* _ptr;
 			block_type* _blockPtr;
 			block_type** _blockDptr;
-
-		private:
 
 			DequeIterator(value_type* ptr = NULL) : _ptr(ptr), _blockPtr(NULL), _blockDptr(NULL) {}
 
@@ -660,20 +650,21 @@ namespace ft
 					--this->_ptr;
 				return (temp);
 			}
-// --------------------
+
 			DequeIterator operator+(int n) const
 			{
-				return (DequeIterator(this->_ptr + n));
-			}
-
-			difference_type operator+(const DequeIterator<T, true> &iter) const
-			{
-				return (this->ptr + iter._ptr);
-			}
-
-			difference_type operator+(const DequeIterator<T, false> &iter) const
-			{
-				return (this->ptr + iter._ptr);
+				difference_type remain = &(this->_blockPtr->back()) - this->_ptr + 1;
+				if (remain < n)
+					return (DequeIterator(this->_ptr + n, this->_blockPtr, this->_blockDptr));
+				else
+				{
+					n -= remain;
+					difference_type blockIdx = n / _blockSize;
+					difference_type elemIdx = n % _blockSize;
+					block_type* newBlock = *(this->_blockDptr + blockIdx);
+					value_type* newPtr = &(newBlock->front()) + elemIdx;
+					return (DequeIterator(newPtr, newBlock, this->_blockDptr + blockIdx)));
+				}
 			}
 
 			DequeIterator operator-(int n) const
@@ -749,8 +740,8 @@ namespace ft
 			}
 	};
 
-	template <typename T, bool IsConst>
-	DequeIterator<T, IsConst> operator+ (typename DequeIterator<T, IsConst>::difference_type n, const DequeIterator<T, IsConst>& iter)
+	template <typename T, typename Alloc, bool IsConst>
+	DequeIterator<T, Alloc, IsConst> operator+ (typename DequeIterator<T, Alloc, IsConst>::difference_type n, const DequeIterator<T, Alloc, IsConst>& iter)
 	{
 		return (DequeIterator<T, IsConst>(iter + n));
 	}

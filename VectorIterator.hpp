@@ -100,16 +100,6 @@ namespace ft
 				return (VectorIterator(this->_ptr + n));
 			}
 
-			difference_type operator+(const VectorIterator<T, true> &iter) const
-			{
-				return (this->ptr + iter._ptr);
-			}
-
-			difference_type operator+(const VectorIterator<T, false> &iter) const
-			{
-				return (this->ptr + iter._ptr);
-			}
-
 			VectorIterator operator-(int n) const
 			{
 				return (VectorIterator(this->_ptr - n));
