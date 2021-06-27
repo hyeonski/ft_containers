@@ -536,7 +536,7 @@ namespace ft
 
 	};
 
-	template<typename T, bool IsConst>
+	template<typename T, typename Alloc, bool IsConst>
 	class DequeIterator
 	{
 		public:
@@ -545,25 +545,30 @@ namespace ft
 			typedef typename choose<IsConst, const T &, T &>::type reference;
 			typedef typename choose<IsConst, const T *, T *>::type pointer;	
 			typedef ft::random_access_iterator_tag iterator_category;
-
-			T* _ptr;
 		private:
-			difference_type _blockIdx;
-			difference_type _elemIdx;
+			typedef Alloc allocator_type;
+			typedef DequeBlock<value_type, allocator_type> block_type;
+		
+		public:
+			value_type* _ptr;
+			block_type* _blockPtr;
+			block_type** _blockDptr;
 
-			DequeIterator(T* ptr = NULL) : _ptr(ptr), _blockIdx(0), _elemIdx(0) {}
+		private:
 
-			DequeIterator(difference_type blockIdx, difference_type elemIdx, T* ptr = NULL) : _ptr(ptr), _blockIdx(blockIdx), _elemIdx(elemIdx) {}
+			DequeIterator(value_type* ptr = NULL) : _ptr(ptr), _blockPtr(NULL), _blockDptr(NULL) {}
 
-			DequeIterator(const DequeIterator<T, false>& ref) : _ptr(ref._ptr), _blockIdx(ref._blockIdx), _elemIdx(ref._elemIdx) {}
+			DequeIterator(value_type* ptr, block_type* blockPtr, block_type** blockDptr) : _ptr(ptr), _blockPtr(blockPtr), _blockDptr(blockDptr) {}
+
+			DequeIterator(const DequeIterator<T, Alloc, false>& x) : _ptr(x.ptr), _blockPtr(x.blockPtr), _blockDptr(x.blockDptr) {}
 			
-			DequeIterator& operator=(const DequeIterator& ref)
+			DequeIterator& operator=(const DequeIterator& x)
 			{
-				if (this != &ref)
+				if (this != &x)
 				{
-					this->_ptr = ref._ptr;
-					this->_blockIdx = ref._blockIdx;
-					this->_elemIdx = ref._elemIdx;
+					this->_ptr = x._ptr;
+					this->_blockIdx = x._blockPtr;
+					this->_elemIdx = x._blockDptr;
 				}
 				return (*this);
 			}
@@ -572,7 +577,14 @@ namespace ft
 			
 			DequeIterator& operator++()
 			{
-				++this->_ptr;
+				if (this->_ptr == &(this->_blockPtr->back()))
+				{
+					++this->_blockDptr;
+					this->_blockPtr = *(this->_blockDptr);
+					this->_ptr = &(this->_blockPtr->front());
+				}
+				else
+					++this->_ptr;
 				return (*this);
 			}
 
@@ -580,7 +592,14 @@ namespace ft
 			{
 				DequeIterator temp(*this);
 
-				++this->_ptr;
+				if (this->_ptr == &(this->_blockPtr->back()))
+				{
+					++this->_blockDptr;
+					this->_blockPtr = *(this->_blockDptr);
+					this->_ptr = &(this->_blockPtr->front());
+				}
+				else
+					++this->_ptr;
 				return (temp);
 			}
 
@@ -616,7 +635,14 @@ namespace ft
 
 			DequeIterator& operator--()
 			{
-				--this->_ptr;
+				if (this->_ptr == &(this->_blockPtr->front()))
+				{
+					--this->_blockDptr;
+					this->_blockPtr = *(this->_blockDptr);
+					this->_ptr = &(this->_blockPtr->back());
+				}
+				else
+					--this->_ptr;
 				return (*this);
 			}
 
@@ -624,10 +650,17 @@ namespace ft
 			{
 				DequeIterator temp(*this);
 
-				--this->_ptr;
+				if (this->_ptr == &(this->_blockPtr->front()))
+				{
+					--this->_blockDptr;
+					this->_blockPtr = *(this->_blockDptr);
+					this->_ptr = &(this->_blockPtr->back());
+				}
+				else
+					--this->_ptr;
 				return (temp);
 			}
-
+// --------------------
 			DequeIterator operator+(int n) const
 			{
 				return (DequeIterator(this->_ptr + n));
