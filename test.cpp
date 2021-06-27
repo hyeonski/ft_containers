@@ -7,7 +7,7 @@
 #include <set>
 #include "map.hpp"
 #include <stack>
-// #include "DequeIterator.hpp"
+#include "deque.hpp"
 
 class A
 {
@@ -72,14 +72,12 @@ int main()
 	// 	std::cout << *it << std::endl;
 
 	// std::cout << std::endl << deque.end() - deque.begin() << std::endl;
-
-	int* p1 = 0x0;
-	int a;
-	int* p2 = &a;
-
-	std::cout << p1 + p2 << std::endl;
+	ft::deque<int> deque;
 
 
-
+	for (int i = 0; i < 1000; ++i)
+		deque.push_back(i);
+	for (ft::deque<int>::const_iterator iter = deque.begin(); iter != deque.end(); ++iter)
+		std::cout << *iter << std::endl;
 
 }

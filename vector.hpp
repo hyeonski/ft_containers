@@ -42,7 +42,7 @@ namespace ft
 				{
 					this->_capacity *= 2;
 					T *temp = this->_alloc.allocate(this->_capacity);
-					for (size_type i = 0; i < this->_size; i++)
+					for (size_type i = 0; i < this->_size; ++i)
 					{
 						this->_alloc.construct(temp + i, *(this->_arr + i) );
 						this->_alloc.destroy(this->_arr + i);
@@ -82,7 +82,7 @@ namespace ft
 			vector (const vector& x) : _arr(NULL), _size(0), _capacity(0), _alloc(x._alloc)
 			{
 				this->reserve(x._size);
-				for (const_iterator iter = x.begin(); iter != x.end(); iter++)
+				for (const_iterator iter = x.begin(); iter != x.end(); ++iter)
 					this->push_back(*iter);
 			}
 
@@ -160,7 +160,7 @@ namespace ft
 				if (n <= this->_size)
 				{
 					size_type size = this->_size - n;
-					for (size_type i = 0; i < size; i++)
+					for (size_type i = 0; i < size; ++i)
 						this->pop_back();
 				}
 				else
@@ -196,7 +196,7 @@ namespace ft
 				else
 				{
 					T* temp = this->_alloc.allocate(n);
-					for (size_type i = 0; i < this->_size; i++)
+					for (size_type i = 0; i < this->_size; ++i)
 					{
 						this->_alloc.construct(temp + i, *(this->_arr + i));
 						this->_alloc.destroy(this->_arr + i);
@@ -268,7 +268,7 @@ namespace ft
 			{
 				this->clear();
 				this->reserve(n);
-				for (size_type i = 0; i < n; i++)
+				for (size_type i = 0; i < n; ++i)
 					this->push_back(val);
 			}
 
@@ -332,7 +332,7 @@ namespace ft
 				for (size_type i = 0; i < n; ++i)
 				{
 					this->_alloc.construct(this->_arr + pos + i, *first);
-					first++;
+					++first;
 				}
 			}
 

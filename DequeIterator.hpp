@@ -234,6 +234,7 @@ namespace ft
 				this->_startIdx = x._startIdx;
 				for (size_type i = x._startIdx; i < x._startIdx + x._size; ++i)
 					this->_arr[i] = x._arr[i];
+				return (*this);
 			}
 
 			iterator begin()
@@ -454,7 +455,7 @@ namespace ft
 				for (size_type i = 0; i < n; ++i)
 				{
 					this->_alloc.construct(this->_arr + pos + i, *first);
-					first++;
+					++first;
 				}
 			}
 
@@ -532,7 +533,6 @@ namespace ft
 		public:
 			typedef T value_type;
 			typedef std::ptrdiff_t difference_type;
-			typedef std::ptrdiff_t difference_type;
 			typedef typename choose<IsConst, const T &, T &>::type reference;
 			typedef typename choose<IsConst, const T *, T *>::type pointer;	
 			typedef ft::random_access_iterator_tag iterator_category;
@@ -550,7 +550,7 @@ namespace ft
 
 			DequeIterator(value_type* ptr, block_type* blockPtr, block_type** blockDptr) : _ptr(ptr), _blockPtr(blockPtr), _blockDptr(blockDptr) {}
 
-			DequeIterator(const DequeIterator<T, Alloc, false>& x) : _ptr(x.ptr), _blockPtr(x.blockPtr), _blockDptr(x.blockDptr) {}
+			DequeIterator(const DequeIterator<T, Alloc, false>& x) : _ptr(x._ptr), _blockPtr(x._blockPtr), _blockDptr(x._blockDptr) {}
 			
 			DequeIterator& operator=(const DequeIterator& x)
 			{
@@ -593,22 +593,22 @@ namespace ft
 				return (temp);
 			}
 
-			bool operator==(const DequeIterator<T, true>& iter) const
+			bool operator==(const DequeIterator<T, Alloc, true>& iter) const
 			{
 				return (this->_ptr == iter._ptr);
 			}
 
-			bool operator==(const DequeIterator<T, false>& iter) const
+			bool operator==(const DequeIterator<T, Alloc, false>& iter) const
 			{
 				return (this->_ptr == iter._ptr);
 			}
 
-			bool operator!=(const DequeIterator<T, true>& iter) const
+			bool operator!=(const DequeIterator<T, Alloc, true>& iter) const
 			{
 				return (this->_ptr != iter._ptr);
 			}
 
-			bool operator!=(const DequeIterator<T, false>& iter) const
+			bool operator!=(const DequeIterator<T, Alloc, false>& iter) const
 			{
 				return (this->_ptr != iter._ptr);
 			}
@@ -653,97 +653,137 @@ namespace ft
 
 			DequeIterator operator+(int n) const
 			{
-				difference_type remain = &(this->_blockPtr->back()) - this->_ptr + 1;
-				if (remain < n)
-					return (DequeIterator(this->_ptr + n, this->_blockPtr, this->_blockDptr));
-				else
-				{
-					n -= remain;
-					difference_type blockIdx = n / _blockSize;
-					difference_type elemIdx = n % _blockSize;
-					block_type* newBlock = *(this->_blockDptr + blockIdx);
-					value_type* newPtr = &(newBlock->front()) + elemIdx;
-					return (DequeIterator(newPtr, newBlock, this->_blockDptr + blockIdx)));
-				}
+				DequeIterator temp(*this);
+				temp += n;
+				return (temp);
 			}
 
 			DequeIterator operator-(int n) const
 			{
-				return (DequeIterator(this->_ptr - n));
+				DequeIterator temp(*this);
+				temp -= n;
+				return (temp);
 			}
 
-			difference_type operator-(const DequeIterator<T, true> &iter) const
+			difference_type operator-(const DequeIterator<T, Alloc, true> &iter) const
 			{
-				return (this->_ptr - iter._ptr);
+				if (*this != iter)
+					return ((this->_blockDptr - iter._blockDptr) * _blockSize)
+						+ (this->_ptr - this->_blockPtr)
+						- (iter._ptr - iter._blockPtr);
+				return (0);
 			}
 
-			difference_type operator-(const DequeIterator<T, false> &iter) const
+			difference_type operator-(const DequeIterator<T, Alloc, false> &iter) const
 			{
-				return (this->_ptr - iter._ptr);
+				if (*this != iter)
+					return ((this->_blockDptr - iter._blockDptr) * _blockSize)
+						+ (this->_ptr - &(this->_blockPtr->front()))
+						- (iter._ptr - &(iter._blockPtr->front()));
+				return (0);
 			}
 
 			DequeIterator& operator+=(int n)
 			{
-				this->_ptr += n;
+				if (n != 0)
+				{
+					n += this->_ptr - &(this->_blockPtr->front());
+					if (n > 0)
+					{
+						this->_blockDptr += n / _blockSize;
+						this->_blockPtr = *(this->_blockDptr);
+						this->_ptr = &(this->_blockPtr->front()) + (n % _blockSize);
+					}
+					else // (n < 0)
+					{
+						difference_type remainFromBlock = _blockSize - 1 - n;
+						this->_blockDptr -= remainFromBlock / _blockSize;
+						this->_blockPtr = *(this->_blockDptr);
+						this->_ptr = &(this->_blockPtr->front()) + (_blockSize - 1 - (remainFromBlock % _blockSize));
+					}
+				}
 				return (*this);
 			}
 
 			DequeIterator& operator-=(int n)
 			{
-				this->_ptr -= n;
-				return (*this);
+        		return ((*this) += (-n));
 			}
 
-			bool operator<  (const DequeIterator<T, true>& rhs) const
+			bool operator<  (const DequeIterator<T, Alloc, true>& rhs) const
 			{
-				return (this->_ptr < rhs._ptr);
+				if (this->_blockDptr != rhs._blockDptr)
+					return (this->_blockDptr < rhs._blockDptr);
+				else
+					return (this->_ptr < rhs._ptr);
 			}
 
-			bool operator<  (const DequeIterator<T, false>& rhs) const
+			bool operator<  (const DequeIterator<T, Alloc, false>& rhs) const
 			{
-				return (this->_ptr < rhs._ptr);
+				if (this->_blockDptr != rhs._blockDptr)
+					return (this->_blockDptr < rhs._blockDptr);
+				else
+					return (this->_ptr < rhs._ptr);
 			}
 			
-			bool operator<= (const DequeIterator<T, true>& rhs) const
+			bool operator<= (const DequeIterator<T, Alloc, true>& rhs) const
 			{
-				return (this->_ptr <= rhs._ptr);
+				if (this->_blockDptr != rhs._blockDptr)
+					return (this->_blockDptr < rhs._blockDptr);
+				else
+					return (this->_ptr <= rhs._ptr);
 			}
 
-			bool operator<= (const DequeIterator<T, false>& rhs) const
+			bool operator<= (const DequeIterator<T, Alloc, false>& rhs) const
 			{
-				return (this->_ptr <= rhs._ptr);
+				if (this->_blockDptr != rhs._blockDptr)
+					return (this->_blockDptr < rhs._blockDptr);
+				else
+					return (this->_ptr <= rhs._ptr);
 			}
 			
-			bool operator>  (const DequeIterator<T, true>& rhs) const
+			bool operator>  (const DequeIterator<T, Alloc, true>& rhs) const
 			{
-				return (this->_ptr > rhs._ptr);
+				if (this->_blockDptr != rhs._blockDptr)
+					return (this->_blockDptr > rhs._blockDptr);
+				else
+					return (this->_ptr > rhs._ptr);
 			}
 
-			bool operator>  (const DequeIterator<T, false>& rhs) const
+			bool operator>  (const DequeIterator<T, Alloc, false>& rhs) const
 			{
-				return (this->_ptr > rhs._ptr);
+				if (this->_blockDptr != rhs._blockDptr)
+					return (this->_blockDptr > rhs._blockDptr);
+				else
+					return (this->_ptr > rhs._ptr);
 			}
 
-			bool operator>= (const DequeIterator<T, true>& rhs) const
+			bool operator>= (const DequeIterator<T, Alloc, true>& rhs) const
 			{
-				return (this->_ptr >= rhs._ptr);
+				if (this->_blockDptr != rhs._blockDptr)
+					return (this->_blockDptr > rhs._blockDptr);
+				else
+					return (this->_ptr >= rhs._ptr);
 			}
 
-			bool operator>= (const DequeIterator<T, false>& rhs) const
+			bool operator>= (const DequeIterator<T, Alloc, false>& rhs) const
 			{
-				return (this->_ptr >= rhs._ptr);
+				if (this->_blockDptr != rhs._blockDptr)
+					return (this->_blockDptr > rhs._blockDptr);
+				else
+					return (this->_ptr >= rhs._ptr);
 			}
 
 			reference operator[](difference_type n) const
 			{
-				return (this->_ptr[n]);
+				return (*( (*this) + n));
 			}
 	};
 
 	template <typename T, typename Alloc, bool IsConst>
 	DequeIterator<T, Alloc, IsConst> operator+ (typename DequeIterator<T, Alloc, IsConst>::difference_type n, const DequeIterator<T, Alloc, IsConst>& iter)
 	{
-		return (DequeIterator<T, IsConst>(iter + n));
+		return (DequeIterator<T, Alloc, IsConst>(iter + n));
 	}
 }
 

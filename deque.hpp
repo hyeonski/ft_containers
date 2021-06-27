@@ -19,19 +19,20 @@ namespace ft
 			typedef typename allocator_type::const_reference const_reference;
 			typedef typename allocator_type::pointer pointer;
 			typedef typename allocator_type::const_pointer const_pointer;
-			typedef ft::DequeIterator<T, false> iterator;
-			typedef ft::DequeIterator<T, true> const_iterator;
+			typedef ft::DequeIterator<T, Alloc, false> iterator;
+			typedef ft::DequeIterator<T, Alloc, true> const_iterator;
 			typedef ft::reverse_iterator<iterator> reverse_iterator;
 			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 			typedef typename iterator_traits<iterator>::difference_type difference_type;
 			typedef size_t size_type;
 		private:
 			typedef typename Alloc::template rebind< DequeBlock<value_type, allocator_type> >::other AlBlock;
+			typedef typename Alloc::template rebind< DequeBlock<value_type, allocator_type>* >::other AlBlockPtr;
 			typedef DequeBlock<value_type, allocator_type> block_type;
 
 			allocator_type _alloc;
 			AlBlock _blockAlloc;
-			ft::DequeBlock< block_type*, allocator_type> _blocks;
+			ft::DequeBlock< block_type*, AlBlockPtr> _blocks;
 			size_type _size;
 			static const size_type _blockSize = 256;
 
@@ -60,7 +61,7 @@ namespace ft
 				this->assign(first, last);
 			}
 
-			deque (const deque& x) : _alloc(x._alloc), _size(0);
+			deque (const deque& x) : _alloc(x._alloc), _size(0)
 			{
 				block_type* block = this->_blockAlloc.allocate(1);
 				this->_blockAlloc.construct(block, block_type());
@@ -83,13 +84,25 @@ namespace ft
 				this->assign(x.begin(), x.end());
 			}
 
-			iterator begin();
+			iterator begin()
+			{
+				return (iterator(&this->front(), this))
+			}
 
-			const_iterator begin() const;
+			const_iterator begin() const
+			{
+				return ()
+			}
 
-			iterator end();
+			iterator end()
+			{
+				return ()
+			}
 
-			const_iterator end() const;
+			const_iterator end() const
+			{
+				return ()
+			}
 
 			reverse_iterator rbegin();
 
@@ -114,13 +127,13 @@ namespace ft
 				if (n <= this->_size)
 				{
 					size_type newSize = this->_size - n;
-					for (size_type i = 0; i < newSize; i++)
+					for (size_type i = 0; i < newSize; ++i)
 						this->pop_back();
 				}
 				else
 				{
 					size_type newSize = n - this->_size;
-					for (size_type i = 0; i < newSize ++i)
+					for (size_type i = 0; i < newSize; ++i)
 						this->push_back();
 				}
 			}
@@ -285,18 +298,61 @@ namespace ft
 				--this->_size;
 			}
 
-			iterator insert (iterator position, const value_type& val); // begin 또는 end에 삽입 시 pointer valid
+			// iterator insert (iterator position, const value_type& val) // begin 또는 end에 삽입 시 pointer valid
+			// {
+			// 	if (position == this->begin())
+			// 		this->push_front(val);
+			// 	else if (position == this->end())
+			// 		this->push_back(val);
+			// 	else
+			// 	{
+					
+			// 	}
+			// }
 
-			void insert (iterator position, size_type n, const value_type& val);
+			// void insert (iterator position, size_type n, const value_type& val)
+			// {
+			// 	if (position == this->begin())
+			// 	{
+			// 		for (size_type i = 0; i < n; ++i)
+			// 			this->push_front(val);
+			// 	}
+			// 	else if (position == this->end())
+			// 	{
+			// 		for (size_type i = 0; i < n; ++i)
+			// 			this->push_back(val);
+			// 	}
+			// 	else
+			// 	{
+					
+			// 	}
+			// }
 
-			template <class InputIterator>
-			void insert (iterator position, InputIterator first, InputIterator last);
+			// template <class InputIterator>
+			// void insert (iterator position, InputIterator first, InputIterator last);
 
-			iterator erase (iterator position);
+			// iterator erase (iterator position)
+			// {
+			// 	if (position == this->begin())
+			// 		this->pop_front(val);
+			// 	else if (position == this->end())
+			// 		this->pop_back(val);
+			// 	else
+			// 	{
 
-			iterator erase (iterator first, iterator last);
+			// 	}
+			// }
 
-			void swap (deque& x);
+			// iterator erase (iterator first, iterator last);
+
+			// void swap (deque& x)
+			// {
+			// 	char buf[sizeof(deque)];
+			// 	memcpy(buf, reinterpret_cast<void *>(&x), sizeof(deque));
+			// 	memcpy(reinterpret_cast<char *>(&x), reinterpret_cast<void *>(this), sizeof(deque));
+			// 	memcpy(reinterpret_cast<char *>(this), reinterpret_cast<void *>(buf), sizeof(deque));
+
+			// }
 
 			void clear()
 			{
@@ -313,26 +369,48 @@ namespace ft
 
 
 	template <class T, class Alloc>
-	bool operator== (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+	bool operator== (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
+	{
+		if (lhs.size() != rhs.size())
+			return (false);
+		return (ft::equal(lhs.begin(), lhs.end(), rhs.begin()));
+	}
 
 	template <class T, class Alloc>
-	bool operator!= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+	bool operator!= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
+	{
+		return (!(lhs == rhs));	
+	}
 
 	template <class T, class Alloc>
-	bool operator<  (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+	bool operator<  (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
+	{
+		return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
+	}
 
 	template <class T, class Alloc>
-	bool operator<= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+	bool operator<= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
+	{
+		return ((lhs == rhs) || (lhs < rhs));
+	}
 
 	template <class T, class Alloc>
-	bool operator>  (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+	bool operator>  (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
+	{
+		return (!(lhs <= rhs));
+	}
 
 	template <class T, class Alloc>
-	bool operator>= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+	bool operator>= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
+	{
+		return ((lhs == rhs) || (lhs > rhs));
+	}
 
 	template <class T, class Alloc>
-	void swap (deque<T,Alloc>& x, deque<T,Alloc>& y);
-
+	void swap (deque<T,Alloc>& x, deque<T,Alloc>& y)
+	{
+		x.swap(y);
+	}
 
 }
 
