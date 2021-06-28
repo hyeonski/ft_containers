@@ -93,17 +93,20 @@ int main()
 	// 	std::cout << *it << std::endl;
 
 	// std::cout << std::endl << deque.end() - deque.begin() << std::endl;
-	std::deque<A> deque;
+	ft::deque<A> deque;
 
  
-	for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < 20000; ++i)
+	{
 		deque.push_back(A(i));
+	}
 
 
 	deque.pop_back();
 
 
 
-	for (std::deque<A>::const_reverse_iterator iter = deque.rbegin(); iter != deque.rend(); ++iter)
-		std::cout << *iter << std::endl;
+	for (ft::deque<A>::const_reverse_iterator iter = deque.rbegin(); iter != deque.rend(); ++iter)
+		std::cout << *iter << " ";
+	std::cout << std::endl;
 }

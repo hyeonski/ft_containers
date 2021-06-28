@@ -19,8 +19,8 @@ namespace ft
 			typedef typename allocator_type::const_reference const_reference;
 			typedef typename allocator_type::pointer pointer;
 			typedef typename allocator_type::const_pointer const_pointer;
-			typedef ft::DequeIterator<T, Alloc, false> iterator;
-			typedef ft::DequeIterator<T, Alloc, true> const_iterator;
+			typedef ft::DequeIterator<T, false> iterator;
+			typedef ft::DequeIterator<T, true> const_iterator;
 			typedef ft::reverse_iterator<iterator> reverse_iterator;
 			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 			typedef typename iterator_traits<iterator>::difference_type difference_type;
@@ -32,29 +32,34 @@ namespace ft
 			ft::DequeBlock< value_type*, AlPtr> _blocks;
 			size_type _start;
 			size_type _size;
-			size_type _capacity;
-			static const size_type _blockSize = (sizeof(value_type) < 256 ? (4096 / sizeof(value_type) : 15));
+			static const size_type _blockSize = (sizeof(value_type) < 256 ? (4096 / sizeof(value_type)) : 16);
 
 		public:
-			explicit deque (const allocator_type& alloc = allocator_type()) : _alloc(alloc), _start(0), _size(0), _capacity(0) {}
+			explicit deque (const allocator_type& alloc = allocator_type()) : _alloc(alloc), _start(0), _size(0) {}
 
-			explicit deque (size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type()) : _alloc(alloc), _start(0), _size(0), _capacity(0)
+			explicit deque (size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type()) : _alloc(alloc), _start(0), _size(0)
 			{
 				this->assign(n, val);
 			}
 
 			template <class InputIterator>
-			deque (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(), typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL) : _alloc(alloc), _start(0), _size(0), _capacity(0)
+			deque (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(), typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL) : _alloc(alloc), _start(0), _size(0)
 			{
 				this->assign(first, last);
 			}
 
-			deque (const deque& x) : _alloc(alloc), _start(0), _size(0), _capacity(0)
+			deque (const deque& x) : _alloc(x._alloc), _start(0), _size(0)
 			{
 				this->assign(x.begin(), x.end());
 			}
 
-			virtual ~deque();
+			virtual ~deque()
+			{
+				this->clear();
+				for (typename ft::DequeBlock< value_type*, AlPtr>::iterator iter = this->_blocks.begin(); iter != this->_blocks.end(); ++iter)
+					this->_alloc.deallocate(*iter, _blockSize);
+				this->_blocks.clear();
+			}
 
 			deque& operator= (const deque& x)
 			{
@@ -62,21 +67,51 @@ namespace ft
 				this->assign(x.begin(), x.end());
 			}
 
-			iterator begin();
+			iterator begin()
+			{
+				value_type** block = &(this->_blocks.front()) + (this->_start / _blockSize);
+				return (iterator(*block + (this->_start % _blockSize), this->empty() ? 0 : block));
+			}
 
-			const_iterator begin() const;
+			const_iterator begin() const
+			{
+				value_type** block = &(this->_blocks.front()) + (this->_start / _blockSize);
+				return (const_iterator(*block + (this->_start % _blockSize), this->empty() ? 0 : block));
+			}
 
-			iterator end();
+			iterator end()
+			{
+				size_type pos = this->_start + this->_size;
+				value_type** block = &(this->_blocks.front()) + (pos / _blockSize);
+				return (iterator(*block + (pos % _blockSize), this->empty() ? 0 : block));
+			}
 
-			const_iterator end() const;
+			const_iterator end() const
+			{
+				size_type pos = this->_start + this->_size;
+				value_type** block = &(this->_blocks.front()) + (pos / _blockSize);
+				return (const_iterator(*block + (pos % _blockSize), this->empty() ? 0 : block));
+			}
 
-			reverse_iterator rbegin();
+			reverse_iterator rbegin()
+			{
+				return (reverse_iterator(this->end()));
+			}
 
-			const_reverse_iterator rbegin() const;
+			const_reverse_iterator rbegin() const
+			{
+				return (const_reverse_iterator(this->end()));
+			}
 
-			reverse_iterator rend();
+			reverse_iterator rend()
+			{
+				return (reverse_iterator(this->begin()));
+			}
 
-			const_reverse_iterator rend() const;
+			const_reverse_iterator rend() const
+			{
+				return (const_reverse_iterator(this->begin()));
+			}
 
 			size_type size() const
 			{
@@ -111,78 +146,60 @@ namespace ft
 
 			reference operator[] (size_type n)
 			{
-				if (n < this->_blocks.front()->size())
-					return (*(this->_blocks.front())[n]);
-				else
-				{
-					n -= this->_blocks.front()->size();
-					size_type blockIdx = n / _blockSize;
-					size_type elemIdx = n % _blockSize;
-					return (*(this->_blocks[blockIdx + 1])[elemIdx]);
-				}
+				size_type pos = this->_start + n;
+				value_type* block = this->_blocks[pos / _blockSize];
+				return (block[pos % _blockSize]);
 			}
 
 			const_reference operator[] (size_type n) const
 			{
-				if (n < this->_blocks.front()->size())
-					return (*(this->_blocks.front())[n]);
-				else
-				{
-					n -= this->_blocks.front()->size();
-					size_type blockIdx = n / _blockSize;
-					size_type elemIdx = n % _blockSize;
-					return (*(this->_blocks[blockIdx + 1])[elemIdx]);
-				}
+				size_type pos = this->_start + n;
+				value_type* block = this->_blocks[pos / _blockSize];
+				return (block[pos % _blockSize]);
 			}
 
 			reference at (size_type n)
 			{
-				if (n >= this->_size)
+				if (this->_size <= n)
 					throw std::out_of_range("Error: ft::deque: Index out of range");
-				if (n < this->_blocks.front()->size())
-					return (*(this->_blocks.front())[n]);
-				else
-				{
-					n -= this->_blocks.front()->size();
-					size_type blockIdx = n / _blockSize;
-					size_type elemIdx = n % _blockSize;
-					return (*(this->_blocks[blockIdx + 1])[elemIdx]);
-				}
+				size_type pos = this->_start + n;
+				value_type* block = this->_blocks[pos / _blockSize];
+				return (block[pos % _blockSize]);
 			}
 
 			const_reference at (size_type n) const
 			{
-				if (n >= this->_size)
+				if (this->_size <= n)
 					throw std::out_of_range("Error: ft::deque: Index out of range");
-				if (n < this->_blocks.front()->size())
-					return (*(this->_blocks.front())[n]);
-				else
-				{
-					n -= this->_blocks.front()->size();
-					size_type blockIdx = n / _blockSize;
-					size_type elemIdx = n % _blockSize;
-					return (*(this->_blocks[blockIdx + 1])[elemIdx]);
-				}
+				size_type pos = this->_start + n;
+				value_type* block = this->_blocks[pos / _blockSize];
+				return (block[pos % _blockSize]);
 			}
 
 			reference front()
 			{
-				return (this->_blocks.front()->front());
+				value_type* block = this->_blocks[this->_start / _blockSize];
+				return (block[this->_start % _blockSize]);
 			}
 
 			const_reference front() const
 			{
-				return (this->_blocks.front()->front());
+				value_type* block = this->_blocks[this->_start / _blockSize];
+				return (block[this->_start % _blockSize]);
 			}
 
 			reference back()
 			{
-				return (this->_blocks.back()->back());
+				size_type last = this->_start + this->_size - 1;
+				value_type* block = this->_blocks[last / _blockSize];
+				return (block[last % _blockSize]);
 			}
 
 			const_reference back() const
 			{
-				return (this->_blocks.back()->back());
+				size_type last = this->_start + this->_size - 1;
+				value_type* block = this->_blocks[last / _blockSize];
+				return (block[last % _blockSize]);
 			}
 
 			template <class InputIterator>
@@ -202,66 +219,41 @@ namespace ft
 
 			void push_back (const value_type& val)
 			{
-				block_type* last = this->_blocks.back();
-				if (last->startIndex() + last->size() == _blockSize)
-				{
-					block_type* newBlock = this->_blockAlloc.allocate(1);
-					this->_blockAlloc.construct(newBlock, block_type(0));
-					newBlock->push_back(val);
-					this->_blocks.push_back(newBlock);
-				}
-				else
-					last->push_back(val);
+				if (this->_getBackSpare() == 0)
+					this->_addBackCapacity();
+				size_type toAdd = this->_start + this->_size;
+				value_type* block = this->_blocks[toAdd / _blockSize];
+				this->_alloc.construct(block + (toAdd % _blockSize), val);
 				++this->_size;
 			}
 
 			void push_front (const value_type& val)
 			{
-				block_type* first = this->_blocks.front();
-				if (first->startIndex() == 0)
-				{
-					block_type* newBlock = this->_blockAlloc.allocate(1);
-					this->_blockAlloc.construct(newBlock, block_type(_blockSize - 1));
-					newBlock->push_front(val);
-					this->_blocks.push_front(newBlock);
-				}
-				else
-					first->push_front(val);
+				if (this->_getFrontSpare() == 0)
+					this->_addFrontCapacity();
+				value_type* block = this->_blocks[this->_start / _blockSize];
+				--this->_start;
+				this->_alloc.construct(block + (this->_start % _blockSize), val);
 				++this->_size;
 			}
 
 			void pop_back()
 			{
-				if (this->_blocks.back()->size() == 1)
-				{
-					if (this->_blocks.size() == 1)
-						this->_blocks.back()->pop_back();
-					block_type* last = this->_blocks.back();
-					last->pop_back();
-					this->_blockAlloc.destroy(last);
-					this->_blockAlloc.deallocate(last, 1);
-					this->_blocks.pop_back();
-				}
-				else
-					this->_blocks.back()->pop_back();
+				size_type last = this->_start + this->_size - 1;
+				value_type* block = this->_blocks[last / _blockSize];
+				this->_alloc.destroy(block + (last % _blockSize));
+
 				--this->_size;
+				this->removeBackSpare();
 			}
 
 			void pop_front()
 			{
-				if (this->_blocks.front()->size() == 1)
-				{
-					if (this->_blocks.size() == 1)
-						this->_blocks.front()->pop_front();
-					block_type* first = this->_blocks.front();
-					first->pop_front();
-					this->_blockAlloc.destroy(first);
-					this->_blockAlloc.deallocate(first, 1);
-					this->_blocks.pop_front();
-				}
-				else
-					this->_blocks.front()->pop_front();
+				value_type* block = this->_blocks[this->_start / _blockSize];
+				this->_alloc.destroy(block + (this->_start % _blockSize));
 				--this->_size;
+				++this->_start;
+				this->removeFrontSpare();
 			}
 
 			// iterator insert (iterator position, const value_type& val) // begin 또는 end에 삽입 시 pointer valid
@@ -330,6 +322,73 @@ namespace ft
 			{
 				return (this->_alloc);
 			}
+
+		private:
+			size_type _getCapacity()
+			{
+				return (this->_blocks.size() == 0 ? 0 : this->_blocks.size() * _blockSize - 1);
+			}
+			size_type _getFrontSpare()
+			{
+				return (this->_start);
+			}
+
+			size_type _getBackSpare()
+			{
+				return (this->_getCapacity() - (this->_start + this->_size));
+			}
+
+			void _addBackCapacity()
+			{
+				value_type* newBlock = this->_alloc.allocate(_blockSize);
+				this->_blocks.push_back(newBlock);
+			}
+
+			void _addFrontCapacity()
+			{
+				value_type* newBlock = this->_alloc.allocate(_blockSize);
+				this->_blocks.push_front(newBlock);
+
+				if (this->_blocks.size() == 1)
+					this->_start = _blockSize / 2;
+				else
+					this->_start += _blockSize;
+			} 
+
+			size_type _getFrontSpareBlock()
+			{
+				return (this->_getFrontSpare() / _blockSize);
+			}
+
+			size_type _getBackSpareBlock()
+			{
+				return (this->_getBackSpare() / _blockSize);
+			}
+
+			bool removeFrontSpare()
+			{
+				if (this->_getFrontSpareBlock() >= 2)
+				{
+					this->_alloc.deallocate(this->_blocks.front(), _blockSize);
+					this->_blocks.pop_front();
+					this-_start -= _blockSize;
+					return (true);
+				}
+				return (false);
+			}
+
+			bool removeBackSpare()
+			{
+				if (this->_getBackSpareBlock() >= 2)
+				{
+					std::cout << this->_blocks.size() << std::endl;
+					this->_alloc.deallocate(this->_blocks.back(), _blockSize);
+					this->_blocks.pop_back();
+					return (true);
+				}
+				return (false);
+			}
+
 
 	};
 
