@@ -294,15 +294,7 @@ namespace ft
 			void push_back(const value_type& val)
 			{
 				if (this->_start + this->_size == this->_capacity)
-				{
-					if (this->_start == 0)
-						this->_reserveBack(this->_capacity * 2);
-					else
-					{
-						--this->_start;
-						this->_shift_elem_front(this->_start, 1);
-					}
-				}
+					this->_reserveBack(this->_capacity + 256);
 				this->_alloc.construct(this->_arr + this->_start + this->_size, val);
 				++this->_size;
 			}
@@ -310,15 +302,7 @@ namespace ft
 			void push_front(const value_type& val)
 			{
 				if (this->_start == 0)
-				{
-					if (this->_size == this->_capacity)
-						this->_reserveFront(this->_capacity * 2);
-					else
-					{
-						this->_shift_elem_back(0, 1);
-						++this->_start;
-					}
-				}
+					this->_reserveFront(this->_capacity + 256);
 				this->_alloc.construct(this->_arr + this->_start - 1, val);
 				--this->_start;
 				++this->_size;
@@ -390,15 +374,7 @@ namespace ft
 			{
 				size_type pos = position._ptr - this->_arr; // startIdx가지 감안되어 계산된 인덱스
 				if (this->_start + this->_size == this->_capacity)
-				{
-					if (this->_start == 0)
-						this->_reserveBack(this->_capacity * 2);
-					else
-					{
-						--this->_start;
-						this->_shift_elem_front(this->_start, 1);
-					}
-				}
+					this->_reserveBack(this->_capacity + 256);
 				if (this->_size != 0)
 					this->_shift_elem_back(pos, 1);
 				++this->_size;
@@ -411,11 +387,6 @@ namespace ft
 				size_type pos = position._ptr - this->_arr;
 				if (this->_capacity < this->_start + this->_size + n)
 				{
-					if (this->_start - n >= 0)
-					{
-						this->_start -= n;
-						this->_shift_elem_front(this->_start, n);
-					}
 					if (this->_start + this->_size + n > this->_capacity && this->_start + this->_size + n < this->_capacity * 2)
 						this->_reserveBack(this->_capacity * 2);
 					else
@@ -436,11 +407,6 @@ namespace ft
 					++n;
 				if (this->_capacity < this->_start + this->_size + n)
 				{
-					if (this->_start - n >= 0)
-					{
-						this->_start -= n;
-						this->_shift_elem_front(this->_start, n);
-					}
 					if (this->_start + this->_size + n > this->_capacity && this->_start + this->_size + n < this->_capacity * 2)
 						this->_reserveBack(this->_capacity * 2);
 					else
@@ -540,7 +506,7 @@ namespace ft
 			value_type* _ptr;
 			value_type** _blockPtr;
 
-			DequeIterator(value_type* ptr = NULL) : _ptr(ptr), _blockPtr(NULL) {}
+			DequeIterator() : _ptr(NULL), _blockPtr(NULL) {}
 
 			DequeIterator(value_type* ptr, value_type** blockPtr) : _ptr(ptr), _blockPtr(blockPtr) {}
 
@@ -685,14 +651,14 @@ namespace ft
 
 			bool operator<  (const DequeIterator<T, true>& rhs) const
 			{
-				return (this->__m_iter_ < rhs.__m_iter_ ||
-					(this->__m_iter_ == rhs.__m_iter_ && this->__ptr_ < rhs.__ptr_));
+				return (this->_blockPtr < rhs._blockPtr ||
+					(this->_blockPtr == rhs._blockPtr && this->_ptr < rhs._ptr));
 			}
 
 			bool operator<  (const DequeIterator<T, false>& rhs) const
 			{
-				return (this->__m_iter_ < rhs.__m_iter_ ||
-					(this->__m_iter_ == rhs.__m_iter_ && this->__ptr_ < rhs.__ptr_));
+				return (this->_blockPtr < rhs._blockPtr ||
+					(this->_blockPtr == rhs._blockPtr && this->_ptr < rhs._ptr));
 			}
 			
 			bool operator<= (const DequeIterator<T, true>& rhs) const

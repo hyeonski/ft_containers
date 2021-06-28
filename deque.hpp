@@ -65,31 +65,32 @@ namespace ft
 			{
 				this->clear();
 				this->assign(x.begin(), x.end());
+				return (*this);
 			}
 
 			iterator begin()
 			{
-				value_type** block = &(this->_blocks.front()) + (this->_start / _blockSize);
+				value_type** block = const_cast<value_type**>(&(this->_blocks.front())) + (this->_start / _blockSize);
 				return (iterator(*block + (this->_start % _blockSize), this->empty() ? 0 : block));
 			}
 
 			const_iterator begin() const
 			{
-				value_type** block = &(this->_blocks.front()) + (this->_start / _blockSize);
+				value_type** block = const_cast<value_type**>(&(this->_blocks.front())) + (this->_start / _blockSize);
 				return (const_iterator(*block + (this->_start % _blockSize), this->empty() ? 0 : block));
 			}
 
 			iterator end()
 			{
 				size_type pos = this->_start + this->_size;
-				value_type** block = &(this->_blocks.front()) + (pos / _blockSize);
+				value_type** block = const_cast<value_type**>(&(this->_blocks.front())) + (pos / _blockSize);
 				return (iterator(*block + (pos % _blockSize), this->empty() ? 0 : block));
 			}
 
 			const_iterator end() const
 			{
 				size_type pos = this->_start + this->_size;
-				value_type** block = &(this->_blocks.front()) + (pos / _blockSize);
+				value_type** block = const_cast<value_type**>(&(this->_blocks.front())) + (pos / _blockSize);
 				return (const_iterator(*block + (pos % _blockSize), this->empty() ? 0 : block));
 			}
 
@@ -135,7 +136,7 @@ namespace ft
 				{
 					size_type toAdd = n - this->_size;
 					for (size_type i = 0; i < toAdd; ++i)
-						this->push_back();
+						this->push_back(val);
 				}
 			}
 
@@ -161,7 +162,7 @@ namespace ft
 			reference at (size_type n)
 			{
 				if (this->_size <= n)
-					throw std::out_of_range("Error: ft::deque: Index out of range");
+					throw std::out_of_range("deque");
 				size_type pos = this->_start + n;
 				value_type* block = this->_blocks[pos / _blockSize];
 				return (block[pos % _blockSize]);
@@ -170,7 +171,7 @@ namespace ft
 			const_reference at (size_type n) const
 			{
 				if (this->_size <= n)
-					throw std::out_of_range("Error: ft::deque: Index out of range");
+					throw std::out_of_range("deque");
 				size_type pos = this->_start + n;
 				value_type* block = this->_blocks[pos / _blockSize];
 				return (block[pos % _blockSize]);
@@ -231,8 +232,8 @@ namespace ft
 			{
 				if (this->_getFrontSpare() == 0)
 					this->_addFrontCapacity();
-				value_type* block = this->_blocks[this->_start / _blockSize];
 				--this->_start;
+				value_type* block = this->_blocks[this->_start / _blockSize];
 				this->_alloc.construct(block + (this->_start % _blockSize), val);
 				++this->_size;
 			}
@@ -244,7 +245,7 @@ namespace ft
 				this->_alloc.destroy(block + (last % _blockSize));
 
 				--this->_size;
-				this->removeBackSpare();
+				this->_removeBackSpare();
 			}
 
 			void pop_front()
@@ -253,64 +254,200 @@ namespace ft
 				this->_alloc.destroy(block + (this->_start % _blockSize));
 				--this->_size;
 				++this->_start;
-				this->removeFrontSpare();
+				this->_removeFrontSpare();
 			}
 
-			// iterator insert (iterator position, const value_type& val) // begin 또는 end에 삽입 시 pointer valid
-			// {
-			// 	if (position == this->begin())
-			// 		this->push_front(val);
-			// 	else if (position == this->end())
-			// 		this->push_back(val);
-			// 	else
-			// 	{
-					
-			// 	}
-			// }
+			iterator insert (iterator position, const value_type& val) // begin 또는 end에 삽입 시 pointer valid
+			{
+				size_type pos = position - this->begin();
+				size_type toEnd = this->size() - pos;
+				if (pos < toEnd)
+				{   // insert by shifting things backward
+					if (this->_getFrontSpare() == 0)
+						this->_addFrontCapacity();
+					if (pos == 0) // position == begin
+						this->push_front(val);
+					else
+					{
+						this->_shift_elem_front(--this->begin(), this->begin(), position);
+						--this->_start;
+						value_type* block = this->_blocks[(this->_start + pos) / _blockSize];
+						this->_alloc.construct(block + ((this->_start + pos) % _blockSize), val);
+						++this->_size;
+					}
+				}
+				else
+				{   // insert by shifting things forward
+					if (this->_getBackSpare() == 0)
+						this->_addBackCapacity();
+					if (toEnd == 0)
+						this->push_back(val);
+					else
+					{
+						this->_shift_elem_back(++this->end(), this->end(), position);
+						value_type* block = this->_blocks[(this->_start + pos) / _blockSize];
+						this->_alloc.construct(block + ((this->_start + pos) % _blockSize), val);
+						++this->_size;
+					}
+				}
+				return (this->begin() + pos);
+			}
 
-			// void insert (iterator position, size_type n, const value_type& val)
-			// {
-			// 	if (position == this->begin())
-			// 	{
-			// 		for (size_type i = 0; i < n; ++i)
-			// 			this->push_front(val);
-			// 	}
-			// 	else if (position == this->end())
-			// 	{
-			// 		for (size_type i = 0; i < n; ++i)
-			// 			this->push_back(val);
-			// 	}
-			// 	else
-			// 	{
-					
-			// 	}
-			// }
+			void insert (iterator position, size_type n, const value_type& val)
+			{
+				size_type pos = position - this->begin();
+				size_type toEnd = this->size() - pos;
+				if (pos < toEnd)
+				{   // insert by shifting things backward
+					while (this->_getFrontSpare() < n)
+						this->_addFrontCapacity();
+					if (pos == 0) // position == begin
+					{
+						for (size_type i = 0; i < n; ++i)
+							this->push_front(val);
+					}
+					else
+					{
+						this->_shift_elem_front(this->begin() - n, this->begin(), position);
+						this->_start -= n;
 
-			// template <class InputIterator>
-			// void insert (iterator position, InputIterator first, InputIterator last);
+						value_type* block;
+						for (size_type i = 0; i < n; ++i)
+						{
+							block = this->_blocks[(this->_start + pos + i) / _blockSize];
+							this->_alloc.construct(block + ((this->_start + pos + i) % _blockSize), val);
+						}
+						this->_size += n;
+					}
+				}
+				else
+				{   // insert by shifting things forward
+					if (this->_getBackSpare() < n)
+						this->_addBackCapacity();
+					if (toEnd == 0)
+					{
+						for (size_type i = 0; i < n; ++i)
+							this->push_back(val);
+					}
+					else
+					{
+						this->_shift_elem_back(this->end() + n, this->end(), position);
 
-			// iterator erase (iterator position)
-			// {
-			// 	if (position == this->begin())
-			// 		this->pop_front(val);
-			// 	else if (position == this->end())
-			// 		this->pop_back(val);
-			// 	else
-			// 	{
+						value_type* block;
+						for (size_type i = 0; i < n; ++i)
+						{
+							block = this->_blocks[(this->_start + pos + i) / _blockSize];
+							this->_alloc.construct(block + ((this->_start + pos + i) % _blockSize), val);
+						}
+						this->_size += n;
+					}
+				}
+			}
 
-			// 	}
-			// }
+			template <class InputIterator>
+			void insert (iterator position, InputIterator first, InputIterator last, typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL)
+			{
+				size_type pos = position - this->begin();
+				size_type toEnd = this->size() - pos;
+				size_type n = 0;
+				for (InputIterator temp = first; temp != last; ++temp)
+					++n;
+				if (pos < toEnd)
+				{   // insert by shifting things backward
+					while (this->_getFrontSpare() < n)
+						this->_addFrontCapacity();
+					if (pos != 0)
+						this->_shift_elem_front(this->begin() - n, this->begin(), position);
 
-			// iterator erase (iterator first, iterator last);
+					this->_start -= n;
 
-			// void swap (deque& x)
-			// {
-			// 	char buf[sizeof(deque)];
-			// 	memcpy(buf, reinterpret_cast<void *>(&x), sizeof(deque));
-			// 	memcpy(reinterpret_cast<char *>(&x), reinterpret_cast<void *>(this), sizeof(deque));
-			// 	memcpy(reinterpret_cast<char *>(this), reinterpret_cast<void *>(buf), sizeof(deque));
+					value_type* block;
+					for (size_type i = 0; i < n; ++i)
+					{
+						block = this->_blocks[(this->_start + pos + i) / _blockSize];
+						this->_alloc.construct(block + ((this->_start + pos + i) % _blockSize), *first);
+						++first;
+					}
+					this->_size += n;
+				}
+				else
+				{   // insert by shifting things forward
+					if (this->_getBackSpare() < n)
+						this->_addBackCapacity();
+					if (toEnd != 0)
+						this->_shift_elem_back(this->end() + n, this->end(), position);
 
-			// }
+					value_type* block;
+					for (size_type i = 0; i < n; ++i)
+					{
+						block = this->_blocks[(this->_start + pos + i) / _blockSize];
+						this->_alloc.construct(block + ((this->_start + pos + i) % _blockSize), *first);
+						++first;
+					}
+					this->_size += n;
+				}
+			}
+
+			iterator erase (iterator position)
+			{
+				iterator begin = this->begin();
+				difference_type pos = position - begin;
+
+				this->_alloc.destroy(position._ptr);
+
+				if (static_cast<size_type>(pos) <= (this->_size - 1) / 2)
+				{   // erase from front
+					this->_shift_elem_back(position + 1, position, begin);
+					--this->_size;
+					++this->_start;
+					this->_removeFrontSpare();
+				}
+				else
+				{   // erase from back
+					this->_shift_elem_front(position, position + 1, this->end());
+					--this->_size;
+					this->_removeBackSpare();
+				}
+				return (this->begin() + pos);
+			}
+
+			iterator erase (iterator first, iterator last)
+			{
+				iterator begin = this->begin();
+				difference_type pos = first - begin;
+				size_type n = last - first;
+
+				iterator temp = first;
+				while (temp != last)
+				{
+					this->_alloc.destroy(temp._ptr);
+					++temp;
+				}
+
+				if (static_cast<size_type>(pos) <= (this->_size - 1) / 2)
+				{
+					this->_shift_elem_back(last, first, begin);
+					this->_size -= n;
+					this->_start += n;
+					this->_removeFrontSpare();
+				}
+				else
+				{   // erase from back
+					this->_shift_elem_front(first, last, this->end());
+					this->_size -= n;
+					this->_removeBackSpare();
+				}
+				return (this->begin() + pos);
+			}
+
+			void swap (deque& x)
+			{
+				char buf[sizeof(deque)];
+				memcpy(buf, reinterpret_cast<void *>(&x), sizeof(deque));
+				memcpy(reinterpret_cast<char *>(&x), reinterpret_cast<void *>(this), sizeof(deque));
+				memcpy(reinterpret_cast<char *>(this), reinterpret_cast<void *>(buf), sizeof(deque));
+
+			}
 
 			void clear()
 			{
@@ -365,29 +502,53 @@ namespace ft
 				return (this->_getBackSpare() / _blockSize);
 			}
 
-			bool removeFrontSpare()
+			bool _removeFrontSpare()
 			{
 				if (this->_getFrontSpareBlock() >= 2)
 				{
 					this->_alloc.deallocate(this->_blocks.front(), _blockSize);
 					this->_blocks.pop_front();
-					this-_start -= _blockSize;
+					this->_start -= _blockSize;
 					return (true);
 				}
 				return (false);
 			}
 
-			bool removeBackSpare()
+			bool _removeBackSpare()
 			{
 				if (this->_getBackSpareBlock() >= 2)
 				{
-					std::cout << this->_blocks.size() << std::endl;
 					this->_alloc.deallocate(this->_blocks.back(), _blockSize);
 					this->_blocks.pop_back();
 					return (true);
 				}
 				return (false);
 			}
+
+			void _shift_elem_front(iterator newFront, iterator oldFront, iterator pos)
+			{
+				while (oldFront != pos)
+				{
+					this->_alloc.construct(newFront._ptr, *oldFront);
+					this->_alloc.destroy(oldFront._ptr);
+					++newFront;
+					++oldFront;
+				}
+			}
+
+			void _shift_elem_back(iterator newEnd, iterator oldEnd, iterator pos)
+			{
+				if (oldEnd == pos)
+					return ;
+				do
+				{
+					--newEnd;
+					--oldEnd;
+					this->_alloc.construct(newEnd._ptr, *oldEnd);
+					this->_alloc.destroy(oldEnd._ptr);
+				} while (oldEnd != pos);
+			}
+
 
 
 	};
