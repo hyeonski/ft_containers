@@ -12,21 +12,42 @@
 class A
 {
 	public:
+	long long a;
+	long long b;
+	long long c;
+	long long d;
+	long long arr[4];
+	long long arr2[8];
+	long long arr3[112];
+	
+
+	public:
 		A()
 		{
-			std::cout << "default" << std::endl;
+			// std::cout << "default" << std::endl;
+		}
+
+		A(long long n)
+		{
+			a = n;
 		}
 
 		A(const A& a)
 		{
-			std::cout << "copy" << std::endl;
+			this->a = a.a;
+			// std::cout << "copy" << std::endl;
 		}
 
 		~A()
 		{
-			std::cout << "destruct" << std::endl;
+			// std::cout << "destruct" << std::endl;
 		}
 };
+
+std::ostream& operator<<(std::ostream& os, const A& a)
+{
+	return (os << a.a);
+}
 
 void func()
 {
@@ -72,12 +93,17 @@ int main()
 	// 	std::cout << *it << std::endl;
 
 	// std::cout << std::endl << deque.end() - deque.begin() << std::endl;
-	ft::deque<int> deque;
+	std::deque<A> deque;
+
+ 
+	for (int i = 0; i < 16; ++i)
+		deque.push_back(A(i));
 
 
-	for (int i = 0; i < 1000; ++i)
-		deque.push_back(i);
-	for (ft::deque<int>::const_iterator iter = deque.begin(); iter != deque.end(); ++iter)
+	deque.pop_back();
+
+
+
+	for (std::deque<A>::const_reverse_iterator iter = deque.rbegin(); iter != deque.rend(); ++iter)
 		std::cout << *iter << std::endl;
-
 }

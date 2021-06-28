@@ -26,57 +26,35 @@ namespace ft
 			typedef typename iterator_traits<iterator>::difference_type difference_type;
 			typedef size_t size_type;
 		private:
-			typedef typename Alloc::template rebind< DequeBlock<value_type, allocator_type> >::other AlBlock;
-			typedef typename Alloc::template rebind< DequeBlock<value_type, allocator_type>* >::other AlBlockPtr;
-			typedef DequeBlock<value_type, allocator_type> block_type;
+			typedef typename Alloc::template rebind< value_type* >::other AlPtr;
 
 			allocator_type _alloc;
-			AlBlock _blockAlloc;
-			ft::DequeBlock< block_type*, AlBlockPtr> _blocks;
+			ft::DequeBlock< value_type*, AlPtr> _blocks;
+			size_type _start;
 			size_type _size;
-			static const size_type _blockSize = 256;
+			size_type _capacity;
+			static const size_type _blockSize = (sizeof(value_type) < 256 ? (4096 / sizeof(value_type) : 15));
 
 		public:
-			explicit deque (const allocator_type& alloc = allocator_type()) : _alloc(alloc), _size(0)
-			{
-				block_type* block = this->_blockAlloc.allocate(1);
-				this->_blockAlloc.construct(block, block_type());
-				this->_blocks.push_back(block);
-			}
+			explicit deque (const allocator_type& alloc = allocator_type()) : _alloc(alloc), _start(0), _size(0), _capacity(0) {}
 
-			explicit deque (size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type()) : _alloc(alloc), _size(0)
+			explicit deque (size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type()) : _alloc(alloc), _start(0), _size(0), _capacity(0)
 			{
-				block_type* block = this->_blockAlloc.allocate(1);
-				this->_blockAlloc.construct(block, block_type());
-				this->_blocks.push_back(block);
 				this->assign(n, val);
 			}
 
 			template <class InputIterator>
-			deque (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(), typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL) : _alloc(alloc), _size(0)
+			deque (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(), typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL) : _alloc(alloc), _start(0), _size(0), _capacity(0)
 			{
-				block_type* block = this->_blockAlloc.allocate(1);
-				this->_blockAlloc.construct(block, block_type());
-				this->_blocks.push_back(block);
 				this->assign(first, last);
 			}
 
-			deque (const deque& x) : _alloc(x._alloc), _size(0)
+			deque (const deque& x) : _alloc(alloc), _start(0), _size(0), _capacity(0)
 			{
-				block_type* block = this->_blockAlloc.allocate(1);
-				this->_blockAlloc.construct(block, block_type());
-				this->_blocks.push_back(block);
 				this->assign(x.begin(), x.end());
 			}
 
-			virtual ~deque()
-			{
-				this->clear();
-				block_type* block = this->_blocks.front();
-				this->_blockAlloc.destroy(block);
-				this->_blockAlloc.deallocate(block, 1);
-				this->_blocks.pop_back();
-			}
+			virtual ~deque();
 
 			deque& operator= (const deque& x)
 			{
@@ -84,25 +62,13 @@ namespace ft
 				this->assign(x.begin(), x.end());
 			}
 
-			iterator begin()
-			{
-				return (iterator(&this->front(), this))
-			}
+			iterator begin();
 
-			const_iterator begin() const
-			{
-				return ()
-			}
+			const_iterator begin() const;
 
-			iterator end()
-			{
-				return ()
-			}
+			iterator end();
 
-			const_iterator end() const
-			{
-				return ()
-			}
+			const_iterator end() const;
 
 			reverse_iterator rbegin();
 
@@ -126,14 +92,14 @@ namespace ft
 			{
 				if (n <= this->_size)
 				{
-					size_type newSize = this->_size - n;
-					for (size_type i = 0; i < newSize; ++i)
+					size_type toDelete = this->_size - n;
+					for (size_type i = 0; i < toDelete; ++i)
 						this->pop_back();
 				}
 				else
 				{
-					size_type newSize = n - this->_size;
-					for (size_type i = 0; i < newSize; ++i)
+					size_type toAdd = n - this->_size;
+					for (size_type i = 0; i < toAdd; ++i)
 						this->push_back();
 				}
 			}

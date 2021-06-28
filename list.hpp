@@ -142,7 +142,7 @@ namespace ft
 
 				this->allocateBaseNode();
 
-				for (size_type i = 0; i < n; i++)
+				for (size_type i = 0; i < n; ++i)
 					this->push_back(val);
 
 				this->_size = n; //explicitly
@@ -155,7 +155,7 @@ namespace ft
 
 				this->allocateBaseNode();
 
-				for (InputIterator iter = first; iter != last; iter++)
+				for (InputIterator iter = first; iter != last; ++iter)
 					this->push_back(*iter);
 			}
 
@@ -263,7 +263,7 @@ namespace ft
 			{
 				this->clear();
 
-				for (InputIterator iter = first; iter != last; iter++)
+				for (InputIterator iter = first; iter != last; ++iter)
 					this->push_back(*iter);
 			}
 
@@ -271,7 +271,7 @@ namespace ft
 			{
 				this->clear();
 
-				for (size_type i = 0; i < n; i++)
+				for (size_type i = 0; i < n; ++i)
 					this->push_back(val);
 
 				this->_size = n; //explicitly
@@ -312,7 +312,7 @@ namespace ft
 			template <class InputIterator>
 			void insert (iterator position, InputIterator first, InputIterator last, typename ft::enable_if< !ft::is_integral<InputIterator>::value >::type* = NULL)
 			{
-				for (InputIterator iter = first; iter != last; iter++)
+				for (InputIterator iter = first; iter != last; ++iter)
 					this->addNodeFront(position._ptr, *iter);
 			}
 
@@ -395,7 +395,7 @@ namespace ft
 				for (iterator iter = first; iter != last; )
 				{
 					temp = iter;
-					iter++;
+					++iter;
 					this->splice(position, x, temp);
 				}
 			}
@@ -407,7 +407,7 @@ namespace ft
 				for (iterator iter = this->begin(); iter != this->end(); )
 				{
 					temp = iter;
-					iter++;
+					++iter;
 					if (*temp == val)
 						this->erase(temp);
 				}
@@ -421,7 +421,7 @@ namespace ft
 				for (iterator iter = this->begin(); iter != this->end(); )
 				{
 					temp = iter;
-					iter++;
+					++iter;
 					if (pred(*temp))
 						this->erase(temp);
 				}
@@ -480,7 +480,7 @@ namespace ft
 						this->splice(iter, x, temp);
 					}
 					else
-						iter++;
+						++iter;
 				}
 				this->splice(this->end(), x);
 			}
@@ -502,7 +502,7 @@ namespace ft
 						this->splice(iter, x, temp);
 					}
 					else
-						iter++;
+						++iter;
 				}
 				this->splice(this->end(), x);
 			}
