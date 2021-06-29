@@ -145,10 +145,10 @@ namespace ft
 				if (result.second == true)
 				{
 					++this->_size;
-					return (pair<iterator,bool>(iterator(result.first), true));
+					return (pair<iterator,bool>(iterator(result.first, this->_tree), true));
 				}
 				else
-					return (pair<iterator,bool>(iterator(result.first), false));
+					return (pair<iterator,bool>(iterator(result.first, this->_tree), false));
 			}
 
 			iterator insert (iterator position, const value_type& val)
@@ -233,22 +233,22 @@ namespace ft
 
 			iterator lower_bound (const value_type& val)
 			{
-				return (iterator(this->_tree->lowerBound(this->_tree->_root, val, this->_tree->_leaf)));
+				return (iterator(this->_tree->lowerBound(this->_tree->_root, val, this->_tree->_leaf), this->_tree));
 			}
 
 			const_iterator lower_bound (const value_type& val) const
 			{
-				return (const_iterator(this->_tree->lowerBound(this->_tree->_root, val, this->_tree->_leaf)));
+				return (const_iterator(this->_tree->lowerBound(this->_tree->_root, val, this->_tree->_leaf), this->_tree));
 			}
 
 			iterator upper_bound (const value_type& val)
 			{
-				return (iterator(this->_tree->upperBound(this->_tree->_root, val, this->_tree->_leaf)));
+				return (iterator(this->_tree->upperBound(this->_tree->_root, val, this->_tree->_leaf), this->_tree));
 			}
 
 			const_iterator upper_bound (const value_type& val) const
 			{
-				return (const_iterator(this->_tree->upperBound(this->_tree->_root, val, this->_tree->_leaf)));
+				return (const_iterator(this->_tree->upperBound(this->_tree->_root, val, this->_tree->_leaf), this->_tree));
 			}
 
 			pair<iterator,iterator> equal_range (const value_type& val)

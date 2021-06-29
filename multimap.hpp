@@ -157,7 +157,7 @@ namespace ft
 			{
 				pair<TreeNode*, bool> result = this->_tree->insert(val);
 				++this->_size;
-				return (iterator(result.first));
+				return (iterator(result.first, this->_tree));
 			}
 
 			iterator insert (iterator position, const value_type& val)
@@ -248,22 +248,22 @@ namespace ft
 
 			iterator lower_bound (const key_type& k)
 			{
-				return (iterator(this->_tree->lowerBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf)));
+				return (iterator(this->_tree->lowerBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf), this->_tree));
 			}
 
 			const_iterator lower_bound (const key_type& k) const
 			{
-				return (const_iterator(this->_tree->lowerBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf)));
+				return (const_iterator(this->_tree->lowerBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf), this->_tree));
 			}
 
 			iterator upper_bound (const key_type& k)
 			{
-				return (iterator(this->_tree->upperBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf)));
+				return (iterator(this->_tree->upperBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf), this->_tree));
 			}
 
 			const_iterator upper_bound (const key_type& k) const
 			{
-				return (const_iterator(this->_tree->upperBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf)));
+				return (const_iterator(this->_tree->upperBound(this->_tree->_root, value_type(k, mapped_type()), this->_tree->_leaf), this->_tree));
 			}
 
 			pair<const_iterator,const_iterator> equal_range (const key_type& k) const

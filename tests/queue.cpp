@@ -1,199 +1,97 @@
-#include <iostream>
-#include "list.hpp"
-#include <list>
-#include <vector>
+#include "queue.hpp"
+#include <queue>
 
-#ifndef NS
-# define NS ft
+#ifndef LEAK_TEST
+# define LEAK_TEST 0
 #endif
 
-int main()
+#ifndef TEST_NS
+# define TEST_NS ft
+
+#endif
+int		main()
 {
+	std::cout << "===================== empty test start =====================" << std::endl;
+
+	TEST_NS::queue<int> queue_empty;
+	int sum (0);
+
+	for (int i=1;i<=10;i++) 
 	{
-		std::cout << "-------- list default constructor test --------" << std::endl;
-		NS::list<int> list;
-		std::cout << "is empty()?: " << list.empty() << std::endl;
+		queue_empty.push(i);
+		//std::cout << queue_empty.size() << std::endl;
 	}
 
+	while (!queue_empty.empty())
 	{
-		std::cout << "--------- list fill constructor-pointer test --------" << std::endl;
-		int arr[] = {0, 1, 2, 3, 4};
-		NS::list<int> list(arr, arr + 5);
-
-		NS::list<int>::iterator iter = list.begin();
-		(iter++)++;
-		std::cout << "size(): " << list.size() << std::endl;
+		std::cout << queue_empty.size() << std::endl;
+		sum += queue_empty.front();
+		queue_empty.pop();
 	}
 
-	{
-		std::cout << "--------- list fill constructor-iterator test --------" << std::endl;
-		std::vector<int> vec;
-		vec.push_back(1);
-		vec.push_back(2);
-		vec.push_back(3);
-		vec.push_back(4);
-		vec.push_back(5);
-		// iterator로 자료 보여주기 필요
-		std::cout << "vector size(): " << vec.size() << std::endl;
+	std::cout << "total: " << sum << '\n';
 
-		NS::list<int> list(vec.begin(), vec.end());
+	std::cout << "===================== empty test end =======================" << std::endl;
 
-		// iterator로 자료 보여주기 필요
-		std::cout << "list size(): " << list.size() << std::endl;
-	}
-
-	{
-		std::cout << "--------- list fill constructor-value test --------" << std::endl;
-		NS::list<int> list(5, 100);
-
-		// iterator로 자료 보여주기 필요
-		std::cout << "size(): " << list.size() << std::endl;
-	}
-
-	{
-		std::cout << "--------- list push_back test --------" << std::endl;
-		NS::list<int> list;
-
-		std::cout << "before size(): " << list.size() << std::endl;
-		list.push_back(1);
-		list.push_back(2);
-		list.push_back(3);
-		list.push_back(4);
-		list.push_back(5);
-		list.push_back(6);
-		// iterator로 자료 보여주기 필요
-		std::cout << "after size(): " << list.size() << std::endl;
-	}
-
-	{
-		std::cout << "--------- list push_front test --------" << std::endl;
-		NS::list<int> list;
-
-		std::cout << "before size(): " << list.size() << std::endl;
-		list.push_front(1);
-		list.push_front(2);
-		list.push_front(3);
-		list.push_front(4);
-		list.push_front(5);
-		list.push_front(6);
-		// iterator로 자료 보여주기 필요
-		std::cout << "after size(): " << list.size() << std::endl;
-	}
-
-	{
-		std::cout << "--------- list pop_back test --------" << std::endl;
-		NS::list<int> list;
-
-		list.push_back(1);
-		list.push_back(2);
-		list.push_back(3);
-		list.push_back(4);
-		list.push_back(5);
-		list.push_back(6);
-		
-		std::cout << "before size(): " << list.size() << std::endl;
-		list.pop_back();
-		// iterator로 자료 보여주기 필요
-		std::cout << "after size(): " << list.size() << std::endl;
-	}
-
-	{
-		std::cout << "--------- list pop_front test --------" << std::endl;
-		NS::list<int> list;
-
-		list.push_back(1);
-		list.push_back(2);
-		list.push_back(3);
-		list.push_back(4);
-		list.push_back(5);
-		list.push_back(6);
-		
-		std::cout << "before size(): " << list.size() << std::endl;
-		list.pop_front();
-		// iterator로 자료 보여주기 필요
-		std::cout << "after size(): " << list.size() << std::endl;
-	}
-
-	{
-		std::cout << "--------- list clear test --------" << std::endl;
-		NS::list<int> list;
-
-		list.push_back(1);
-		list.push_back(2);
-		list.push_back(3);
-		list.push_back(4);
-		list.push_back(5);
-		list.push_back(6);
-		
-		std::cout << "before size(): " << list.size() << std::endl;
-		list.clear();
-		// iterator로 자료 보여주기 필요
-		std::cout << "after size(): " << list.size() << std::endl;
-		std::cout << "is empty? " << list.empty() << std::endl;
-	}
-
-	{
-		std::cout << "--------- list assign-value test --------" << std::endl;
-		NS::list<int> list;
-
-		list.push_back(1);
-		list.push_back(2);
-		list.push_back(3);
-		list.push_back(4);
-		list.push_back(5);
-		list.push_back(6);
-		
-		// iterator로 자료 보여주기 필요
-		std::cout << "before size(): " << list.size() << std::endl;
-		list.assign(3, 10);
-		// iterator로 자료 보여주기 필요
-		std::cout << "after size(): " << list.size() << std::endl;
-	}
-
-	{
-		std::cout << "--------- list assign-pointer test --------" << std::endl;
-		NS::list<int> list;
+	std::cout << "===================== size test start =======================" << std::endl;
 	
-		list.push_back(1);
-		list.push_back(2);
-		list.push_back(3);
-		list.push_back(4);
-		list.push_back(5);
-		list.push_back(6);
-		
-		// iterator로 자료 보여주기 필요
-		std::cout << "before size(): " << list.size() << std::endl;
-		
-		int arr[] = {0, 1, 2, 3, 4};
-		list.assign(arr, arr + 5);
-		// iterator로 자료 보여주기 필요
-		std::cout << "after size(): " << list.size() << std::endl;
-	}
+	TEST_NS::queue<int> queue_size;
+	std::cout << "0. size: " << queue_size.size() << '\n';
 
-	{
-		std::cout << "--------- list assign-iterator test --------" << std::endl;
-		NS::list<int> list;
+	for (int i=0; i<5; i++) queue_size.push(i);
+	std::cout << "1. size: " << queue_size.size() << '\n';
+
+	queue_size.pop();
+	std::cout << "2. size: " << queue_size.size() << '\n';	
+		
+	std::cout << "===================== size test end =======================" << std::endl;
+
+	std::cout << "===================== front test start =======================" << std::endl;
 	
-		list.push_back(1);
-		list.push_back(2);
-		list.push_back(3);
-		list.push_back(4);
-		list.push_back(5);
-		list.push_back(6);
-		
-		// iterator로 자료 보여주기 필요
-		std::cout << "before size(): " << list.size() << std::endl;
+	TEST_NS::queue<int> queue_front;
 
-		std::vector<int> vec;
-		vec.push_back(10);
-		vec.push_back(9);
-		vec.push_back(8);
-		vec.push_back(7);
-		vec.push_back(6);
-		// iterator로 자료 보여주기 필요
-		
-		list.assign(vec.begin(), vec.end());
-		// iterator로 자료 보여주기 필요
-		std::cout << "after size(): " << list.size() << std::endl;
+	queue_front.push(77);
+	queue_front.push(16);
+
+	queue_front.front() -= queue_front.back();		// 77-16=61
+
+	std::cout << "queue_front.front() is now " << queue_front.front() << '\n';
+
+
+	std::cout << "===================== front test end =========================" << std::endl;
+
+	std::cout << "===================== back test start =========================" << std::endl;
+
+	TEST_NS::queue<int> queue_back;
+
+	queue_back.push(12);
+	queue_back.push(75);	 // this is now the back
+
+	queue_back.back() -= queue_back.front();
+
+	std::cout << "queue_back.back() is now " << queue_back.back() << '\n';
+
+	std::cout << "===================== back test end =========================" << std::endl;
+
+	std::cout << "===================== push and pop test start =======================" << std::endl;
+	
+	TEST_NS::queue<int> queue_push;
+
+	for (int i=0; i<10; i++)
+		queue_push.push(i * 5);
+
+
+	while (!queue_push.empty())
+	{
+		std::cout << ' ' << queue_push.front();
+		queue_push.pop();
 	}
+	std::cout << '\n';
+
+	
+	std::cout << "===================== push and pop test end =========================" << std::endl;
+
+	if (LEAK_TEST != 0)
+		system("leaks a.out > leaks_result; cat leaks_result | grep leaked > leaks_out && rm -rf leaks_result");
+
 }
