@@ -189,13 +189,14 @@ namespace ft
 			typedef typename iterator_traits<iterator>::difference_type difference_type;
 			typedef size_t size_type;
 
-		public:
+		private:
 			value_type* _arr;
 			size_type _size;
 			size_type _capacity;
 			allocator_type _alloc;
 			size_type _start;
-
+		
+		public:
 			DequeBlock(const allocator_type& alloc = allocator_type()) : _arr(NULL), _size(0), _capacity(0), _alloc(alloc), _start(128)
 			{
 				this->_arr = this->_alloc.allocate(256);

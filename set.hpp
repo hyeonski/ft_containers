@@ -33,10 +33,10 @@ namespace ft
 			typedef typename iterator_traits<iterator>::difference_type difference_type;
 			typedef size_t size_type;
 
+		private:
 			typedef typename Alloc::template rebind< RBTree<const_value_type, value_compare, const_allocator_type> >::other AlTree;
 			typedef typename RBTree<const_value_type, value_compare, const_allocator_type>::TreeNode TreeNode;
 
-		private:
 			key_compare _comp;
 			allocator_type _alloc;
 			size_type _size;
