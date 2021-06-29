@@ -577,5 +577,8 @@ TEST_TV			main()
 
 
 	if (LEAK_TEST != 0)
+	{
+		system("leaks a.out");
 		system("leaks a.out > leaks_result; cat leaks_result | grep leaked > leaks_out && rm -rf leaks_result");
+	}
 }

@@ -2,7 +2,7 @@ MLI_TESTER_DIR = ./containers_test
 MY_TESTER_DIR = ./tests
 TEST_RESULT = $(MY_TESTER_DIR)/result
 CONT = vector
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -g3 -fsanitize=address
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 #-g3 -fsanitize=address
 INCLUDE = -I .
 STD_NS = -D TEST_NS=std
 
