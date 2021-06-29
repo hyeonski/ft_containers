@@ -25,6 +25,10 @@ my :
 	@make CONT=map my_unit
 	@make CONT=stack my_unit
 	@make CONT=queue my_unit
+	@make CONT=deque my_unit
+	@make CONT=multimap my_unit
+	@make CONT=set my_unit
+	@make CONT=multiset my_unit
 
 mli :
 	@make mli_unit
@@ -77,5 +81,5 @@ my_unit :
 		cat $(TEST_RESULT)/$(CONT).diff;\
 		printf "\n======================++++++=======================\n";\
 	else\
-		printf "\n                   💧 $(BLUE)SUCCESS$(NC) 💧\n\n";\
+		printf "\n                   😀 $(BLUE)SUCCESS$(NC) 😀\n\n";\
 	fi
