@@ -1,11 +1,11 @@
 #ifndef STACK_HPP
 # define STACK_HPP
 
-# include "list.hpp"
+# include "deque.hpp"
 
 namespace ft
 {
-	template <class T, class Container = ft::list<T> > 
+	template <class T, class Container = ft::deque<T> > 
 	class stack
 	{
 		public:

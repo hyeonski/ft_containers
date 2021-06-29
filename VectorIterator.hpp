@@ -15,7 +15,7 @@ namespace ft
 			typedef typename choose<IsConst, const T *, T *>::type pointer;	
 			typedef ft::random_access_iterator_tag iterator_category;
 
-			T* _ptr; // 고민해보자
+			T* _ptr;
 			// commmon
 			VectorIterator(T* ptr = NULL) : _ptr(ptr) {}
 
@@ -178,11 +178,6 @@ namespace ft
 	{
 		return (VectorIterator<T, IsConst>(iter + n));
 	}
-
-	// typename reverse_iterator<Iterator>::difference_type operator- (const reverse_iterator<Iterator>& lhs, const reverse_iterator<Iterator>& rhs)
-	// {
-	// 	return (lhs._base - rhs._base);
-	// }
 }
 
 #endif

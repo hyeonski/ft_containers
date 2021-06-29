@@ -1,11 +1,11 @@
 #ifndef QUEUE_HPP
 # define QUEUE_HPP
 
-# include "list.hpp"
+# include "deque.hpp"
 
 namespace ft
 {
-	template <class T, class Container = ft::list<T> >
+	template <class T, class Container = ft::deque<T> >
 	class queue
 	{
 		public:
