@@ -49,7 +49,6 @@ namespace ft
 
 			void deleteNode(ListNode<T>* node)
 			{
-				// 비어있을 때 delete 처리해 말아?
 				NodeAlloc nodeAlloc;
 
 				ListNode<T>* nodePrev = node->_prev;

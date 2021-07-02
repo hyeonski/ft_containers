@@ -45,7 +45,6 @@ namespace ft
 	template <class Iterator>
 	class reverse_iterator
 	{
-		// private:
 		public: 
 			Iterator _base;
 			typedef Iterator iterator_type;
